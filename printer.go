@@ -6,10 +6,15 @@ import (
 	"strings"
 )
 
-type Printer struct {
+type printer struct {
 }
 
-func (p *Printer) Fprint(w io.Writer, n Node) {
+func Fprint(w io.Writer, n Node) {
+	p := &printer{}
+	p.Fprint(w, n)
+}
+
+func (p *printer) Fprint(w io.Writer, n Node) {
 	switch n := n.(type) {
 	case File:
 		p.printFile(w, n)
@@ -42,7 +47,7 @@ func (p *Printer) Fprint(w io.Writer, n Node) {
 	}
 }
 
-func (p *Printer) printFile(w io.Writer, f File) {
+func (p *printer) printFile(w io.Writer, f File) {
 	// syntax
 	p.Fprint(w, f.Syntax)
 	// imports
@@ -74,12 +79,12 @@ func (p *Printer) printFile(w io.Writer, f File) {
 	}
 }
 
-func (p *Printer) printSyntax(w io.Writer, s Syntax) {
+func (p *printer) printSyntax(w io.Writer, s Syntax) {
 	fmt.Fprintf(w, "syntax = \"%s\";", s)
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printImport(w io.Writer, i Import) {
+func (p *printer) printImport(w io.Writer, i Import) {
 	if i.Visibility == NotSpecified {
 		fmt.Fprintf(w, "import \"%s\";", i.Name)
 		fmt.Fprintln(w)
@@ -89,17 +94,17 @@ func (p *Printer) printImport(w io.Writer, i Import) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printPackage(w io.Writer, pkg Package) {
+func (p *printer) printPackage(w io.Writer, pkg Package) {
 	fmt.Fprintf(w, "package %s;", pkg.Name)
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printOption(w io.Writer, o Option) {
+func (p *printer) printOption(w io.Writer, o Option) {
 	fmt.Fprintf(w, "%s = %s;", o.Name, o.Value)
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printMessage(w io.Writer, m Message) {
+func (p *printer) printMessage(w io.Writer, m Message) {
 	// name
 	fmt.Fprintf(w, "message %s {", m.Name)
 	fmt.Fprintln(w)
@@ -122,7 +127,7 @@ func (p *Printer) printMessage(w io.Writer, m Message) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printMessageField(w io.Writer, f MessageField) {
+func (p *printer) printMessageField(w io.Writer, f MessageField) {
 	if f.Repeated {
 		fmt.Fprintf(w, "repeated ")
 	}
@@ -142,11 +147,11 @@ func (p *Printer) printMessageField(w io.Writer, f MessageField) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printFieldOption(w io.Writer, o FieldOption) {
+func (p *printer) printFieldOption(w io.Writer, o FieldOption) {
 	fmt.Fprintf(w, "%s = %s", o.Name, o.Value)
 }
 
-func (p *Printer) printEnum(w io.Writer, e Enum) {
+func (p *printer) printEnum(w io.Writer, e Enum) {
 	// name
 	fmt.Fprintf(w, "enum %s {", e.Name)
 	fmt.Fprintln(w)
@@ -158,7 +163,7 @@ func (p *Printer) printEnum(w io.Writer, e Enum) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printEnumField(w io.Writer, f EnumField) {
+func (p *printer) printEnumField(w io.Writer, f EnumField) {
 	fmt.Fprintf(w, "%s = %d", f.Name, f.Index)
 
 	if len(f.Options) != 0 {
@@ -175,11 +180,11 @@ func (p *Printer) printEnumField(w io.Writer, f EnumField) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printEnumValueOption(w io.Writer, o EnumValueOption) {
+func (p *printer) printEnumValueOption(w io.Writer, o EnumValueOption) {
 	fmt.Fprintf(w, "%s = %s", o.Name, o.Value)
 }
 
-func (p *Printer) printService(w io.Writer, s Service) {
+func (p *printer) printService(w io.Writer, s Service) {
 	fmt.Fprintf(w, "service %s {\n", s.Name)
 
 	indent := NewSpaceWriter(w, shift)
@@ -196,7 +201,7 @@ func (p *Printer) printService(w io.Writer, s Service) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printRPC(w io.Writer, r RPC) {
+func (p *printer) printRPC(w io.Writer, r RPC) {
 	fmt.Fprintf(w, "rpc %s ", r.Name)
 	p.Fprint(w, r.Input)
 	fmt.Fprint(w, " returns ")
@@ -205,7 +210,7 @@ func (p *Printer) printRPC(w io.Writer, r RPC) {
 	fmt.Fprintln(w)
 }
 
-func (p *Printer) printReturnType(w io.Writer, i ReturnType) {
+func (p *printer) printReturnType(w io.Writer, i ReturnType) {
 	fmt.Fprint(w, "(")
 	if i.Streamable {
 		fmt.Fprint(w, "stream ")

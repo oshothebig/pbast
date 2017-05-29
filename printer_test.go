@@ -163,8 +163,7 @@ service get {
 func TestWrite(t *testing.T) {
 	for x, d := range table {
 		buf := new(bytes.Buffer)
-		p := Printer{}
-		p.Fprint(buf, d.in)
+		Fprint(buf, d.in)
 
 		if bytes.Compare(buf.Bytes(), []byte(d.expected)) != 0 {
 			t.Errorf("#%d:\ngot\n%s\nwant\n%s", x, buf.Bytes(), d.expected)
@@ -177,9 +176,8 @@ func BenchmarkWrite(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, d := range table {
 			w.Reset()
-			p := Printer{}
 
-			p.Fprint(w, d.in)
+			Fprint(w, d.in)
 		}
 	}
 }
