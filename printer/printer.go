@@ -57,7 +57,7 @@ func (p *printer) printFile(w io.Writer, f pbast.File) {
 		p.Fprint(w, i)
 	}
 	// packages
-	if f.Package.Name != "" {
+	if f.Package != "" {
 		p.Fprint(w, f.Package)
 	}
 	// options
@@ -97,7 +97,7 @@ func (p *printer) printImport(w io.Writer, i pbast.Import) {
 }
 
 func (p *printer) printPackage(w io.Writer, pkg pbast.Package) {
-	fmt.Fprintf(w, "package %s;", pkg.Name)
+	fmt.Fprintf(w, "package %s;", pkg)
 	fmt.Fprintln(w)
 }
 

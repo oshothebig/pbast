@@ -50,14 +50,10 @@ func (v Visibility) String() string {
 	}
 }
 
-type Package struct {
-	Name string
-}
+type Package string
 
 func NewPackage(name string) Package {
-	return Package{
-		Name: name,
-	}
+	return Package(name)
 }
 
 type Option struct {
