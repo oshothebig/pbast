@@ -2,27 +2,21 @@ package pbast
 
 type File struct {
 	Syntax   Syntax
+	Package  Package
 	Imports  []Import
-	Packages []Package
 	Options  []Option
 	Messages []Message
 	Enums    []Enum
 	Services []Service
 }
 
-func NewFile() File {
-	return File{}
+func NewFile(p Package) File {
+	return File{Package: p}
 }
 
 func (f File) AddImport(i Import) File {
 	nf := File(f)
 	nf.Imports = append(nf.Imports, i)
-	return nf
-}
-
-func (f File) AddPackage(p Package) File {
-	nf := File(f)
-	nf.Packages = append(nf.Packages, p)
 	return nf
 }
 

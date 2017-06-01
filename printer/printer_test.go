@@ -122,9 +122,8 @@ var table = []struct {
 `,
 	},
 	{
-		pbast.NewFile().
+		pbast.NewFile(pbast.NewPackage("org.foo")).
 			AddImport(pbast.NewImport("org.example")).
-			AddPackage(pbast.NewPackage("org.foo")).
 			AddMessage(pbast.NewMessage("human").
 				AddField(pbast.NewMessageField("string", "firstName", 1)).
 				AddField(pbast.NewMessageField("string", "lastName", 2))).
