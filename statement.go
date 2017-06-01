@@ -1,5 +1,7 @@
 package pbast
 
+import "strings"
+
 type Syntax struct{}
 
 func (Syntax) String() string {
@@ -54,6 +56,16 @@ type Package string
 
 func NewPackage(name string) Package {
 	return Package(name)
+}
+
+func NewPackageWithElements(elems []string) Package {
+	lowers := make([]string, len(elems))
+	for x, s := range elems {
+		lowers[x] = strings.ToLower(s)
+	}
+
+	// package name is dot separated
+	return Package(strings.Join(lowers, "."))
 }
 
 type Option struct {
