@@ -16,8 +16,7 @@ func Transform(e *yang.Entry) pbast.File {
 
 func transformModule(e entry) pbast.File {
 	namespace := e.Namespace().Name
-	elems := guessElements(namespace)
-	f := pbast.NewFile(pbast.NewPackageWithElements(elems))
+	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
 
 	f = f.AddService(transformRPCs(e))
 
