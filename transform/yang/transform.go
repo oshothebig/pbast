@@ -1,8 +1,6 @@
 package yang
 
 import (
-	"fmt"
-
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/oshothebig/pbast"
 )
@@ -19,7 +17,6 @@ func Transform(e *yang.Entry) pbast.File {
 func transformModule(e entry) pbast.File {
 	namespace := e.Namespace().Name
 	elems := guessElements(namespace)
-	fmt.Println(elems)
 	f := pbast.NewFile(pbast.NewPackageWithElements(elems))
 
 	f = f.AddService(transformRPCs(e))
