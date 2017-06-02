@@ -53,6 +53,15 @@ var table = []struct {
 	},
 	{
 		pbast.NewMessage("human").
+			AddMessage(pbast.NewMessage("friend")),
+		`message human {
+  message friend {
+  }
+}
+`,
+	},
+	{
+		pbast.NewMessage("human").
 			AddField(pbast.NewMessageField("string", "name", 1).
 				AddOption(pbast.NewFieldOption("sex", "male"))),
 		`message human {

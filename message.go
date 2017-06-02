@@ -26,7 +26,7 @@ func (m Message) AddEnum(e Enum) Message {
 }
 
 func (m Message) AddMessage(n Message) Message {
-	nm := Message(n)
+	nm := Message(m)
 	nm.Messages = append(nm.Messages, n)
 	return nm
 }
