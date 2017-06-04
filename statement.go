@@ -104,9 +104,9 @@ type OneOfField struct {
 	Options []Option
 }
 
-func NewOneOfField(typ, name string) OneOfField {
+func NewOneOfField(t Type, name string) OneOfField {
 	return OneOfField{
-		Type: typ,
+		Type: t.TypeName(),
 		Name: name,
 	}
 }

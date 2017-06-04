@@ -43,8 +43,8 @@ var table = []struct {
 	},
 	{
 		pbast.NewMessage("human").
-			AddField(pbast.NewMessageField("string", "firstName", 1)).
-			AddField(pbast.NewMessageField("string", "lastName", 2)),
+			AddField(pbast.NewMessageField(pbast.String, "firstName", 1)).
+			AddField(pbast.NewMessageField(pbast.String, "lastName", 2)),
 		`message human {
   string firstName = 1;
   string lastName = 2;
@@ -62,7 +62,7 @@ var table = []struct {
 	},
 	{
 		pbast.NewMessage("human").
-			AddField(pbast.NewMessageField("string", "name", 1).
+			AddField(pbast.NewMessageField(pbast.String, "name", 1).
 				AddOption(pbast.NewFieldOption("sex", "male"))),
 		`message human {
   string name = 1 [sex = male];
@@ -70,19 +70,19 @@ var table = []struct {
 `,
 	},
 	{
-		pbast.NewMessageField("string", "name", 0),
+		pbast.NewMessageField(pbast.String, "name", 0),
 		"string name = 0;\n",
 	},
 	{
-		pbast.NewRepeatedMessageField("string", "name", 0),
+		pbast.NewRepeatedMessageField(pbast.String, "name", 0),
 		"repeated string name = 0;\n",
 	},
 	{
-		pbast.NewMessageField("string", "name", 0).AddOption(pbast.NewFieldOption("age", "21")),
+		pbast.NewMessageField(pbast.String, "name", 0).AddOption(pbast.NewFieldOption("age", "21")),
 		"string name = 0 [age = 21];\n",
 	},
 	{
-		pbast.NewMessageField("string", "name", 0).
+		pbast.NewMessageField(pbast.String, "name", 0).
 			AddOption(pbast.NewFieldOption("age", "21")).
 			AddOption(pbast.NewFieldOption("tall", "170")),
 		"string name = 0 [age = 21, tall = 170];\n",
@@ -134,11 +134,11 @@ var table = []struct {
 		pbast.NewFile("org.foo").
 			AddImport(pbast.NewImport("org.example")).
 			AddMessage(pbast.NewMessage("human").
-				AddField(pbast.NewMessageField("string", "firstName", 1)).
-				AddField(pbast.NewMessageField("string", "lastName", 2))).
+				AddField(pbast.NewMessageField(pbast.String, "firstName", 1)).
+				AddField(pbast.NewMessageField(pbast.String, "lastName", 2))).
 			AddMessage(pbast.NewMessage("animal").
-				AddField(pbast.NewMessageField("string", "name", 1)).
-				AddField(pbast.NewMessageField("int", "age", 2))).
+				AddField(pbast.NewMessageField(pbast.String, "name", 1)).
+				AddField(pbast.NewMessageField(pbast.Int32, "age", 2))).
 			AddEnum(pbast.NewEnum("sex").
 				AddField(pbast.NewEnumField("male", 1)).
 				AddField(pbast.NewEnumField("female", 2))).
@@ -156,7 +156,7 @@ message human {
 
 message animal {
   string name = 1;
-  int age = 2;
+  int32 age = 2;
 }
 
 enum sex {

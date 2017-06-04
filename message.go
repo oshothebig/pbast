@@ -44,19 +44,19 @@ type FieldOption struct {
 	Value string
 }
 
-func NewMessageField(typ, name string, index int) MessageField {
+func NewMessageField(t Type, name string, index int) MessageField {
 	// no repeat by default
 	return MessageField{
-		Type:  typ,
+		Type:  t.TypeName(),
 		Name:  name,
 		Index: index,
 	}
 }
 
-func NewRepeatedMessageField(typ, name string, index int) MessageField {
+func NewRepeatedMessageField(t Type, name string, index int) MessageField {
 	return MessageField{
 		Repeated: true,
-		Type:     typ,
+		Type:     t.TypeName(),
 		Name:     name,
 		Index:    index,
 	}
