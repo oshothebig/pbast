@@ -14,16 +14,25 @@ func NewMessage(name string) *Message {
 }
 
 func (m *Message) AddField(f *MessageField) *Message {
+	if f == nil {
+		return m
+	}
 	m.Fields = append(m.Fields, f)
 	return m
 }
 
 func (m *Message) AddEnum(e *Enum) *Message {
+	if e == nil {
+		return m
+	}
 	m.Enums = append(m.Enums, e)
 	return m
 }
 
 func (m *Message) AddMessage(n *Message) *Message {
+	if n == nil {
+		return m
+	}
 	m.Messages = append(m.Messages, n)
 	return m
 }
@@ -67,6 +76,9 @@ func NewFieldOption(name, value string) *FieldOption {
 }
 
 func (f *MessageField) AddOption(o *FieldOption) *MessageField {
+	if o == nil {
+		return f
+	}
 	f.Options = append(f.Options, o)
 	return f
 }

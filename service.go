@@ -13,11 +13,17 @@ func NewService(name string) *Service {
 }
 
 func (s *Service) AddOptions(o *Option) *Service {
+	if o == nil {
+		return s
+	}
 	s.Options = append(s.Options, o)
 	return s
 }
 
 func (s *Service) AddRPC(r *RPC) *Service {
+	if r == nil {
+		return s
+	}
 	s.RPCs = append(s.RPCs, r)
 	return s
 }
@@ -38,6 +44,9 @@ func NewRPC(name string, input *ReturnType, output *ReturnType) *RPC {
 }
 
 func (r *RPC) AddOption(o *Option) *RPC {
+	if o == nil {
+		return r
+	}
 	r.Options = append(r.Options, o)
 	return r
 }

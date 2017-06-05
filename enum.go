@@ -12,6 +12,9 @@ func NewEnum(name string) *Enum {
 }
 
 func (e *Enum) AddField(f *EnumField) *Enum {
+	if f == nil {
+		return e
+	}
 	e.Fields = append(e.Fields, f)
 	return e
 }
@@ -42,6 +45,9 @@ func NewEnumValueOption(name, value string) *EnumValueOption {
 }
 
 func (f *EnumField) AddOption(o *EnumValueOption) *EnumField {
+	if o == nil {
+		return f
+	}
 	f.Options = append(f.Options, o)
 	return f
 }

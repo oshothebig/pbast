@@ -93,6 +93,9 @@ func NewOneOf(name string) *OneOf {
 }
 
 func (o *OneOf) AddField(f *OneOfField) *OneOf {
+	if f == nil {
+		return o
+	}
 	o.Fields = append(o.Fields, f)
 	return o
 }
@@ -111,6 +114,9 @@ func NewOneOfField(t Type, name string) *OneOfField {
 }
 
 func (f *OneOfField) AddOption(o *Option) *OneOfField {
+	if o == nil {
+		return f
+	}
 	f.Options = append(f.Options, o)
 	return f
 }
