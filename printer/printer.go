@@ -18,38 +18,38 @@ func Fprint(w io.Writer, n pbast.Node) {
 
 func (p *printer) Fprint(w io.Writer, n pbast.Node) {
 	switch n := n.(type) {
-	case pbast.File:
+	case *pbast.File:
 		p.printFile(w, n)
 	case pbast.Syntax:
 		p.printSyntax(w, n)
-	case pbast.Import:
+	case *pbast.Import:
 		p.printImport(w, n)
 	case pbast.Package:
 		p.printPackage(w, n)
-	case pbast.Option:
+	case *pbast.Option:
 		p.printOption(w, n)
-	case pbast.Message:
+	case *pbast.Message:
 		p.printMessage(w, n)
-	case pbast.MessageField:
+	case *pbast.MessageField:
 		p.printMessageField(w, n)
-	case pbast.FieldOption:
+	case *pbast.FieldOption:
 		p.printFieldOption(w, n)
-	case pbast.Enum:
+	case *pbast.Enum:
 		p.printEnum(w, n)
-	case pbast.EnumField:
+	case *pbast.EnumField:
 		p.printEnumField(w, n)
-	case pbast.EnumValueOption:
+	case *pbast.EnumValueOption:
 		p.printEnumValueOption(w, n)
-	case pbast.Service:
+	case *pbast.Service:
 		p.printService(w, n)
-	case pbast.RPC:
+	case *pbast.RPC:
 		p.printRPC(w, n)
-	case pbast.ReturnType:
+	case *pbast.ReturnType:
 		p.printReturnType(w, n)
 	}
 }
 
-func (p *printer) printFile(w io.Writer, f pbast.File) {
+func (p *printer) printFile(w io.Writer, f *pbast.File) {
 	// syntax
 	p.Fprint(w, f.Syntax)
 	// imports
@@ -86,7 +86,7 @@ func (p *printer) printSyntax(w io.Writer, s pbast.Syntax) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printImport(w io.Writer, i pbast.Import) {
+func (p *printer) printImport(w io.Writer, i *pbast.Import) {
 	if i.Visibility == pbast.NotSpecified {
 		fmt.Fprintf(w, "import \"%s\";", i.Name)
 		fmt.Fprintln(w)
@@ -101,12 +101,12 @@ func (p *printer) printPackage(w io.Writer, pkg pbast.Package) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printOption(w io.Writer, o pbast.Option) {
+func (p *printer) printOption(w io.Writer, o *pbast.Option) {
 	fmt.Fprintf(w, "%s = %s;", o.Name, o.Value)
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printMessage(w io.Writer, m pbast.Message) {
+func (p *printer) printMessage(w io.Writer, m *pbast.Message) {
 	// name
 	fmt.Fprintf(w, "message %s {", m.Name)
 	fmt.Fprintln(w)
@@ -129,7 +129,7 @@ func (p *printer) printMessage(w io.Writer, m pbast.Message) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printMessageField(w io.Writer, f pbast.MessageField) {
+func (p *printer) printMessageField(w io.Writer, f *pbast.MessageField) {
 	if f.Repeated {
 		fmt.Fprintf(w, "repeated ")
 	}
@@ -149,11 +149,11 @@ func (p *printer) printMessageField(w io.Writer, f pbast.MessageField) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printFieldOption(w io.Writer, o pbast.FieldOption) {
+func (p *printer) printFieldOption(w io.Writer, o *pbast.FieldOption) {
 	fmt.Fprintf(w, "%s = %s", o.Name, o.Value)
 }
 
-func (p *printer) printEnum(w io.Writer, e pbast.Enum) {
+func (p *printer) printEnum(w io.Writer, e *pbast.Enum) {
 	// name
 	fmt.Fprintf(w, "enum %s {", e.Name)
 	fmt.Fprintln(w)
@@ -165,7 +165,7 @@ func (p *printer) printEnum(w io.Writer, e pbast.Enum) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printEnumField(w io.Writer, f pbast.EnumField) {
+func (p *printer) printEnumField(w io.Writer, f *pbast.EnumField) {
 	fmt.Fprintf(w, "%s = %d", f.Name, f.Index)
 
 	if len(f.Options) != 0 {
@@ -182,11 +182,11 @@ func (p *printer) printEnumField(w io.Writer, f pbast.EnumField) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printEnumValueOption(w io.Writer, o pbast.EnumValueOption) {
+func (p *printer) printEnumValueOption(w io.Writer, o *pbast.EnumValueOption) {
 	fmt.Fprintf(w, "%s = %s", o.Name, o.Value)
 }
 
-func (p *printer) printService(w io.Writer, s pbast.Service) {
+func (p *printer) printService(w io.Writer, s *pbast.Service) {
 	fmt.Fprintf(w, "service %s {\n", s.Name)
 
 	indent := pbast.NewSpaceWriter(w, shift)
@@ -203,7 +203,7 @@ func (p *printer) printService(w io.Writer, s pbast.Service) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printRPC(w io.Writer, r pbast.RPC) {
+func (p *printer) printRPC(w io.Writer, r *pbast.RPC) {
 	fmt.Fprintf(w, "rpc %s ", r.Name)
 	p.Fprint(w, r.Input)
 	fmt.Fprint(w, " returns ")
@@ -212,7 +212,7 @@ func (p *printer) printRPC(w io.Writer, r pbast.RPC) {
 	fmt.Fprintln(w)
 }
 
-func (p *printer) printReturnType(w io.Writer, i pbast.ReturnType) {
+func (p *printer) printReturnType(w io.Writer, i *pbast.ReturnType) {
 	fmt.Fprint(w, "(")
 	if i.Streamable {
 		fmt.Fprint(w, "stream ")

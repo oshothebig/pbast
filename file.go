@@ -3,43 +3,38 @@ package pbast
 type File struct {
 	Syntax   Syntax
 	Package  Package
-	Imports  []Import
-	Options  []Option
-	Messages []Message
-	Enums    []Enum
-	Services []Service
+	Imports  []*Import
+	Options  []*Option
+	Messages []*Message
+	Enums    []*Enum
+	Services []*Service
 }
 
-func NewFile(p Package) File {
-	return File{Package: p}
+func NewFile(p Package) *File {
+	return &File{Package: p}
 }
 
-func (f File) AddImport(i Import) File {
-	nf := File(f)
-	nf.Imports = append(nf.Imports, i)
-	return nf
+func (f *File) AddImport(i *Import) *File {
+	f.Imports = append(f.Imports, i)
+	return f
 }
 
-func (f File) AddOption(o Option) File {
-	nf := File(f)
-	nf.Options = append(nf.Options, o)
-	return nf
+func (f *File) AddOption(o *Option) *File {
+	f.Options = append(f.Options, o)
+	return f
 }
 
-func (f File) AddMessage(m Message) File {
-	nf := File(f)
-	nf.Messages = append(nf.Messages, m)
-	return nf
+func (f *File) AddMessage(m *Message) *File {
+	f.Messages = append(f.Messages, m)
+	return f
 }
 
-func (f File) AddEnum(e Enum) File {
-	nf := File(f)
-	nf.Enums = append(nf.Enums, e)
-	return nf
+func (f *File) AddEnum(e *Enum) *File {
+	f.Enums = append(f.Enums, e)
+	return f
 }
 
-func (f File) AddService(s Service) File {
-	nf := File(f)
-	nf.Services = append(nf.Services, s)
-	return nf
+func (f *File) AddService(s *Service) *File {
+	f.Services = append(f.Services, s)
+	return f
 }

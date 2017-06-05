@@ -13,21 +13,21 @@ type Import struct {
 	Visibility Visibility
 }
 
-func NewImport(name string) Import {
-	return Import{
+func NewImport(name string) *Import {
+	return &Import{
 		Name: name,
 	}
 }
 
-func NewPublicImport(name string) Import {
-	return Import{
+func NewPublicImport(name string) *Import {
+	return &Import{
 		Name:       name,
 		Visibility: Public,
 	}
 }
 
-func NewWeakImport(name string) Import {
-	return Import{
+func NewWeakImport(name string) *Import {
+	return &Import{
 		Name:       name,
 		Visibility: Weak,
 	}
@@ -74,8 +74,8 @@ type Option struct {
 	Value string
 }
 
-func NewOption(name, value string) Option {
-	return Option{
+func NewOption(name, value string) *Option {
+	return &Option{
 		Name:  name,
 		Value: value,
 	}
@@ -83,36 +83,34 @@ func NewOption(name, value string) Option {
 
 type OneOf struct {
 	Name   string
-	Fields []OneOfField
+	Fields []*OneOfField
 }
 
-func NewOneOf(name string) OneOf {
-	return OneOf{
+func NewOneOf(name string) *OneOf {
+	return &OneOf{
 		Name: name,
 	}
 }
 
-func (o OneOf) AddField(f OneOfField) OneOf {
-	no := OneOf(o)
-	no.Fields = append(no.Fields, f)
-	return no
+func (o *OneOf) AddField(f *OneOfField) *OneOf {
+	o.Fields = append(o.Fields, f)
+	return o
 }
 
 type OneOfField struct {
 	Type    string
 	Name    string
-	Options []Option
+	Options []*Option
 }
 
-func NewOneOfField(t Type, name string) OneOfField {
-	return OneOfField{
+func NewOneOfField(t Type, name string) *OneOfField {
+	return &OneOfField{
 		Type: t.TypeName(),
 		Name: name,
 	}
 }
 
-func (f OneOfField) AddOption(o Option) OneOfField {
-	nf := OneOfField(f)
-	nf.Options = append(nf.Options, o)
-	return nf
+func (f *OneOfField) AddOption(o *Option) *OneOfField {
+	f.Options = append(f.Options, o)
+	return f
 }

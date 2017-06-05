@@ -2,25 +2,24 @@ package pbast
 
 type Enum struct {
 	Name   string
-	Fields []EnumField
+	Fields []*EnumField
 }
 
-func NewEnum(name string) Enum {
-	return Enum{
+func NewEnum(name string) *Enum {
+	return &Enum{
 		Name: name,
 	}
 }
 
-func (e Enum) AddField(f EnumField) Enum {
-	ne := Enum(e)
-	ne.Fields = append(ne.Fields, f)
-	return ne
+func (e *Enum) AddField(f *EnumField) *Enum {
+	e.Fields = append(e.Fields, f)
+	return e
 }
 
 type EnumField struct {
 	Name    string
 	Index   int
-	Options []EnumValueOption
+	Options []*EnumValueOption
 }
 
 type EnumValueOption struct {
@@ -28,22 +27,21 @@ type EnumValueOption struct {
 	Value string
 }
 
-func NewEnumField(name string, index int) EnumField {
-	return EnumField{
+func NewEnumField(name string, index int) *EnumField {
+	return &EnumField{
 		Name:  name,
 		Index: index,
 	}
 }
 
-func NewEnumValueOption(name, value string) EnumValueOption {
-	return EnumValueOption{
+func NewEnumValueOption(name, value string) *EnumValueOption {
+	return &EnumValueOption{
 		Name:  name,
 		Value: value,
 	}
 }
 
-func (f EnumField) AddOption(o EnumValueOption) EnumField {
-	nf := EnumField(f)
-	nf.Options = append(nf.Options, o)
-	return nf
+func (f *EnumField) AddOption(o *EnumValueOption) *EnumField {
+	f.Options = append(f.Options, o)
+	return f
 }

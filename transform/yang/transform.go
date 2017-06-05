@@ -6,15 +6,15 @@ import (
 )
 
 // e must be YANG module
-func Transform(e *yang.Entry) pbast.File {
+func Transform(e *yang.Entry) *pbast.File {
 	if _, ok := e.Node.(*yang.Module); !ok {
-		return pbast.File{}
+		return &pbast.File{}
 	}
 
 	return transformModule(entry{e})
 }
 
-func transformModule(e entry) pbast.File {
+func transformModule(e entry) *pbast.File {
 	namespace := e.Namespace().Name
 	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
 
@@ -23,10 +23,10 @@ func transformModule(e entry) pbast.File {
 	return f
 }
 
-func transformRPCs(e entry) pbast.Service {
+func transformRPCs(e entry) *pbast.Service {
 	rpcs := e.rpcs()
 	if len(rpcs) == 0 {
-		return pbast.Service{}
+		return &pbast.Service{}
 	}
 
 	s := pbast.NewService(CamelCase(e.Name))
@@ -37,7 +37,7 @@ func transformRPCs(e entry) pbast.Service {
 	return s
 }
 
-func transformRPC(e entry) pbast.RPC {
+func transformRPC(e entry) *pbast.RPC {
 	method := CamelCase(e.Name)
 
 	return pbast.NewRPC(

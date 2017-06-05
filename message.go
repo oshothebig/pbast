@@ -2,33 +2,30 @@ package pbast
 
 type Message struct {
 	Name     string
-	Fields   []MessageField
-	Enums    []Enum
-	Messages []Message
+	Fields   []*MessageField
+	Enums    []*Enum
+	Messages []*Message
 }
 
-func NewMessage(name string) Message {
-	return Message{
+func NewMessage(name string) *Message {
+	return &Message{
 		Name: name,
 	}
 }
 
-func (m Message) AddField(f MessageField) Message {
-	nm := Message(m)
-	nm.Fields = append(nm.Fields, f)
-	return nm
+func (m *Message) AddField(f *MessageField) *Message {
+	m.Fields = append(m.Fields, f)
+	return m
 }
 
-func (m Message) AddEnum(e Enum) Message {
-	nm := Message(m)
-	nm.Enums = append(nm.Enums, e)
-	return nm
+func (m *Message) AddEnum(e *Enum) *Message {
+	m.Enums = append(m.Enums, e)
+	return m
 }
 
-func (m Message) AddMessage(n Message) Message {
-	nm := Message(m)
-	nm.Messages = append(nm.Messages, n)
-	return nm
+func (m *Message) AddMessage(n *Message) *Message {
+	m.Messages = append(m.Messages, n)
+	return m
 }
 
 type MessageField struct {
@@ -36,7 +33,7 @@ type MessageField struct {
 	Type     string
 	Name     string
 	Index    int
-	Options  []FieldOption
+	Options  []*FieldOption
 }
 
 type FieldOption struct {
@@ -44,17 +41,17 @@ type FieldOption struct {
 	Value string
 }
 
-func NewMessageField(t Type, name string, index int) MessageField {
+func NewMessageField(t Type, name string, index int) *MessageField {
 	// no repeat by default
-	return MessageField{
+	return &MessageField{
 		Type:  t.TypeName(),
 		Name:  name,
 		Index: index,
 	}
 }
 
-func NewRepeatedMessageField(t Type, name string, index int) MessageField {
-	return MessageField{
+func NewRepeatedMessageField(t Type, name string, index int) *MessageField {
+	return &MessageField{
 		Repeated: true,
 		Type:     t.TypeName(),
 		Name:     name,
@@ -62,15 +59,14 @@ func NewRepeatedMessageField(t Type, name string, index int) MessageField {
 	}
 }
 
-func NewFieldOption(name, value string) FieldOption {
-	return FieldOption{
+func NewFieldOption(name, value string) *FieldOption {
+	return &FieldOption{
 		Name:  name,
 		Value: value,
 	}
 }
 
-func (f MessageField) AddOption(o FieldOption) MessageField {
-	nf := MessageField(f)
-	nf.Options = append(nf.Options, o)
-	return nf
+func (f *MessageField) AddOption(o *FieldOption) *MessageField {
+	f.Options = append(f.Options, o)
+	return f
 }
