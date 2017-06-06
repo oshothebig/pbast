@@ -37,6 +37,21 @@ func (m *Message) AddMessage(n *Message) *Message {
 	return m
 }
 
+func (m *Message) AddType(t Type) *Message {
+	if t == nil {
+		return m
+	}
+
+	switch t := t.(type) {
+	case *Message:
+		return m.AddMessage(t)
+	case *Enum:
+		return m.AddEnum(t)
+	default:
+		return m
+	}
+}
+
 type MessageField struct {
 	Repeated bool
 	Type     string

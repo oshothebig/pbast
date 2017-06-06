@@ -53,3 +53,18 @@ func (f *File) AddService(s *Service) *File {
 	f.Services = append(f.Services, s)
 	return f
 }
+
+func (f *File) AddType(t Type) *File {
+	if t == nil {
+		return f
+	}
+
+	switch t := t.(type) {
+	case *Message:
+		return f.AddMessage(t)
+	case *Enum:
+		return f.AddEnum(t)
+	default:
+		return f
+	}
+}
