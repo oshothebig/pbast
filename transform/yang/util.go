@@ -61,3 +61,21 @@ func CamelCase(s string) string {
 
 	return strings.Join(elems, "")
 }
+
+func underscoreCase(s string) string {
+	elems := guessElements(s)
+	for x, e := range elems {
+		elems[x] = strings.ToLower(e)
+	}
+
+	return strings.Join(elems, "_")
+}
+
+func constantName(s string) string {
+	elems := guessElements(s)
+	for x, e := range elems {
+		elems[x] = strings.ToUpper(e)
+	}
+
+	return strings.Join(elems, "_")
+}
