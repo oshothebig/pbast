@@ -46,6 +46,8 @@ func (t *transformer) module(e entry) *pbast.File {
 	namespace := e.Namespace().Name
 	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
 
+	f.Comment = t.moduleComment(e)
+
 	// Child nodes are enclosed with Root message
 	f.AddMessage(t.buildMessage("Root", e))
 
@@ -65,6 +67,72 @@ func (t *transformer) module(e entry) *pbast.File {
 	return f
 }
 
+func (t *transformer) moduleComment(e entry) pbast.Comment {
+	description := t.description(e)
+	namespace := t.namespace(e)
+	revisions := t.revisions(e)
+	reference := t.reference(e)
+
+	var comment []string
+	comment = append(comment, description...)
+	comment = append(comment, namespace...)
+	comment = append(comment, revisions...)
+	comment = append(comment, reference...)
+
+	return comment
+}
+
+func (t *transformer) genericComments(e entry) pbast.Comment {
+	description := t.description(e)
+	reference := t.reference(e)
+
+	comments := append(description, reference...)
+	return comments
+}
+
+func (t *transformer) description(e entry) pbast.Comment {
+	description := e.Description
+	if e.Description == "" {
+		return nil
+	}
+
+	return []string{"Reference:", description}
+}
+
+func (t *transformer) revisions(e entry) pbast.Comment {
+	var lines []string
+	if v := e.Extra["revision"]; len(v) > 0 {
+		for _, rev := range v[0].([]*yang.Revision) {
+			lines = append(lines, "Revision: "+rev.Name)
+		}
+	}
+
+	return lines
+}
+
+func (t *transformer) namespace(e entry) pbast.Comment {
+	namespace := e.Namespace().Name
+	if namespace == "" {
+		return nil
+	}
+
+	return []string{"Namespace: " + namespace}
+}
+
+func (t *transformer) reference(e entry) pbast.Comment {
+	v := e.Extra["reference"]
+	if len(v) == 0 {
+		return nil
+	}
+
+	ref := v[0].(*yang.Value).Name
+	if ref == "" {
+		return nil
+	}
+
+	return []string{"Reference:", ref}
+}
+
 func (t *transformer) rpcs(e entry) *pbast.Service {
 	rpcs := e.rpcs()
 	if len(rpcs) == 0 {
@@ -72,6 +140,7 @@ func (t *transformer) rpcs(e entry) *pbast.Service {
 	}
 
 	s := pbast.NewService(CamelCase(e.Name))
+	s.Comment = t.genericComments(e)
 	for _, rpc := range rpcs {
 		r := t.rpc(rpc)
 		s.AddRPC(r)
@@ -90,6 +159,7 @@ func (t *transformer) rpc(e entry) *pbast.RPC {
 		pbast.NewReturnType(in),
 		pbast.NewReturnType(out),
 	)
+	rpc.Comment = t.genericComments(e)
 
 	t.declare(t.buildMessage(in, entry{e.RPC.Input}))
 	t.declare(t.buildMessage(out, entry{e.RPC.Output}))
@@ -104,6 +174,7 @@ func (t *transformer) notifications(e entry) *pbast.Service {
 	}
 
 	s := pbast.NewService(CamelCase(e.Name + "Notification"))
+	s.Comment = t.genericComments(e)
 	for _, notification := range notifications {
 		n := t.notification(notification)
 		s.AddRPC(n)
@@ -133,6 +204,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	}
 
 	msg := pbast.NewMessage(name)
+	msg.Comment = t.genericComments(e)
 	for index, child := range e.children() {
 		fieldNum := index + 1
 		switch {
