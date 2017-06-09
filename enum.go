@@ -1,8 +1,9 @@
 package pbast
 
 type Enum struct {
-	Name   string
-	Fields []*EnumField
+	Name    string
+	Comment Comment
+	Fields  []*EnumField
 }
 
 func NewEnum(name string) *Enum {

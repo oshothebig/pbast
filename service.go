@@ -2,6 +2,7 @@ package pbast
 
 type Service struct {
 	Name    string
+	Comment Comment
 	Options []*Option
 	RPCs    []*RPC
 }
@@ -30,6 +31,7 @@ func (s *Service) AddRPC(r *RPC) *Service {
 
 type RPC struct {
 	Name    string
+	Comment Comment
 	Input   *ReturnType
 	Output  *ReturnType
 	Options []*Option

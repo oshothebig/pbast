@@ -52,6 +52,38 @@ var table = []struct {
 `,
 	},
 	{
+		&pbast.Message{
+			Name:    "Root",
+			Comment: []string{"This is", "comment"},
+		},
+		`// This is
+// comment
+message Root {
+}
+`,
+	},
+	{
+		&pbast.Message{
+			Name:    "Root",
+			Comment: []string{"Root Node:", "Indent 0"},
+			Messages: []*pbast.Message{
+				&pbast.Message{
+					Name:    "Inner",
+					Comment: []string{"Inner Node:", "Indent 2"},
+				},
+			},
+		},
+		`// Root Node:
+// Indent 0
+message Root {
+  // Inner Node:
+  // Indent 2
+  message Inner {
+  }
+}
+`,
+	},
+	{
 		pbast.NewMessage("human").
 			AddMessage(pbast.NewMessage("friend")),
 		`message human {

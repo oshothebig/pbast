@@ -46,10 +46,14 @@ func (p *printer) Fprint(w io.Writer, n pbast.Node) {
 		p.printRPC(w, n)
 	case *pbast.ReturnType:
 		p.printReturnType(w, n)
+	case pbast.Comment:
+		p.printComment(w, n)
 	}
 }
 
 func (p *printer) printFile(w io.Writer, f *pbast.File) {
+	// Comment
+	p.Fprint(w, f.Comment)
 	// syntax
 	p.Fprint(w, f.Syntax)
 	// imports
@@ -107,6 +111,9 @@ func (p *printer) printOption(w io.Writer, o *pbast.Option) {
 }
 
 func (p *printer) printMessage(w io.Writer, m *pbast.Message) {
+	// comment
+	p.Fprint(w, m.Comment)
+
 	// name
 	fmt.Fprintf(w, "message %s {", m.Name)
 	fmt.Fprintln(w)
@@ -154,6 +161,8 @@ func (p *printer) printFieldOption(w io.Writer, o *pbast.FieldOption) {
 }
 
 func (p *printer) printEnum(w io.Writer, e *pbast.Enum) {
+	// comment
+	p.Fprint(w, e.Comment)
 	// name
 	fmt.Fprintf(w, "enum %s {", e.Name)
 	fmt.Fprintln(w)
@@ -187,6 +196,9 @@ func (p *printer) printEnumValueOption(w io.Writer, o *pbast.EnumValueOption) {
 }
 
 func (p *printer) printService(w io.Writer, s *pbast.Service) {
+	// comment
+	p.Fprint(w, s.Comment)
+
 	fmt.Fprintf(w, "service %s {\n", s.Name)
 
 	indent := pbast.NewSpaceWriter(w, shift)
@@ -204,6 +216,9 @@ func (p *printer) printService(w io.Writer, s *pbast.Service) {
 }
 
 func (p *printer) printRPC(w io.Writer, r *pbast.RPC) {
+	// comment
+	p.Fprint(w, r.Comment)
+
 	fmt.Fprintf(w, "rpc %s ", r.Name)
 	p.Fprint(w, r.Input)
 	fmt.Fprint(w, " returns ")
@@ -218,6 +233,15 @@ func (p *printer) printReturnType(w io.Writer, i *pbast.ReturnType) {
 		fmt.Fprint(w, "stream ")
 	}
 	fmt.Fprintf(w, "%s)", i.Name)
+}
+
+func (p *printer) printComment(w io.Writer, c pbast.Comment) {
+	lines := make([]string, 0, len(c))
+	for _, line := range c {
+		lines = append(lines, "// "+line+"\n")
+	}
+
+	fmt.Fprint(w, strings.Join(lines, ""))
 }
 
 const shift = 2

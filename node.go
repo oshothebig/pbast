@@ -64,3 +64,7 @@ func (r *RPC) name() string {
 func (t *ReturnType) name() string {
 	return "returnType"
 }
+
+func (c Comment) name() string {
+	return "comment"
+}

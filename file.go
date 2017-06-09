@@ -3,6 +3,7 @@ package pbast
 type File struct {
 	Syntax   Syntax
 	Package  Package
+	Comment  Comment
 	Imports  []*Import
 	Options  []*Option
 	Messages []*Message

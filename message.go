@@ -2,6 +2,7 @@ package pbast
 
 type Message struct {
 	Name     string
+	Comment  Comment
 	Fields   []*MessageField
 	Enums    []*Enum
 	Messages []*Message
