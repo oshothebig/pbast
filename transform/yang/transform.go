@@ -125,12 +125,15 @@ func (t *transformer) reference(e entry) pbast.Comment {
 		return nil
 	}
 
-	ref := v[0].(*yang.Value).Name
-	if ref == "" {
+	ref := v[0].(*yang.Value)
+	if ref == nil {
+		return nil
+	}
+	if ref.Name == "" {
 		return nil
 	}
 
-	return []string{"Reference:", ref}
+	return []string{"Reference:", ref.Name}
 }
 
 func (t *transformer) rpcs(e entry) *pbast.Service {
