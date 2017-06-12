@@ -50,8 +50,12 @@ func (t *transformer) module(e entry) *pbast.File {
 
 	f.Comment = t.moduleComment(e)
 
+	root := t.buildMessage("Root", e)
+	// Clear Root messgage comment because it overlaps with
+	// the file level comment being generated from module description too
+	root.Comment = nil
 	// Child nodes are enclosed with Root message
-	f.AddMessage(t.buildMessage("Root", e))
+	f.AddMessage(root)
 
 	// RPCs
 	s := t.rpcs(e)
