@@ -273,6 +273,7 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 	} else {
 		field = pbast.NewMessageField(typ, name, index)
 	}
+	field.Comment = t.genericComments(e)
 
 	if e.Type.Kind == yang.Ydecimal64 {
 		return field, nil
@@ -312,6 +313,7 @@ func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.Messa
 	} else {
 		field = pbast.NewMessageField(inner, fieldName, index)
 	}
+	field.Comment = t.genericComments(e)
 
 	return inner, field
 }

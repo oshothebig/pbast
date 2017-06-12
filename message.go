@@ -59,6 +59,7 @@ type MessageField struct {
 	Name     string
 	Index    int
 	Options  []*FieldOption
+	Comment  Comment
 }
 
 type FieldOption struct {
