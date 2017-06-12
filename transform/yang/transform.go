@@ -269,12 +269,13 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 	}
 
 	name := underscoreCase(e.Name)
-	if repeated {
-		field = pbast.NewRepeatedMessageField(typ, name, index)
-	} else {
-		field = pbast.NewMessageField(typ, name, index)
+	field = &pbast.MessageField{
+		Repeated: repeated,
+		Type:     typ.TypeName(),
+		Name:     name,
+		Index:    index,
+		Comment:  t.genericComments(e),
 	}
-	field.Comment = t.genericComments(e)
 
 	if e.Type.Kind == yang.Ydecimal64 {
 		return field, nil
@@ -308,13 +309,13 @@ func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.Messa
 	typeName := CamelCase(e.Name)
 
 	inner := t.buildMessage(typeName, e)
-	var field *pbast.MessageField
-	if repeated {
-		field = pbast.NewRepeatedMessageField(inner, fieldName, index)
-	} else {
-		field = pbast.NewMessageField(inner, fieldName, index)
+	field := &pbast.MessageField{
+		Repeated: repeated,
+		Type:     inner.TypeName(),
+		Name:     fieldName,
+		Index:    index,
+		Comment:  t.genericComments(e),
 	}
-	field.Comment = t.genericComments(e)
 
 	return inner, field
 }
