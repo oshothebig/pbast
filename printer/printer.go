@@ -137,6 +137,9 @@ func (p *printer) printMessage(w io.Writer, m *pbast.Message) {
 }
 
 func (p *printer) printMessageField(w io.Writer, f *pbast.MessageField) {
+	// comment
+	p.printComment(w, f.Comment)
+
 	if f.Repeated {
 		fmt.Fprintf(w, "repeated ")
 	}
