@@ -1,6 +1,8 @@
 package yang
 
 import (
+	"strings"
+
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/oshothebig/pbast"
 )
@@ -96,7 +98,12 @@ func (t *transformer) description(e entry) pbast.Comment {
 		return nil
 	}
 
-	return []string{"Reference:", description}
+	lines := strings.Split(strings.TrimRight(description, "\n "), "\n")
+
+	ret := make([]string, 0, len(lines)+1)
+	ret = append(ret, "Description:")
+	ret = append(ret, lines...)
+	return ret
 }
 
 func (t *transformer) revisions(e entry) pbast.Comment {
@@ -133,7 +140,12 @@ func (t *transformer) reference(e entry) pbast.Comment {
 		return nil
 	}
 
-	return []string{"Reference:", ref.Name}
+	lines := strings.Split(strings.TrimRight(ref.Name, "\n "), "\n")
+
+	ret := make([]string, 0, len(lines)+1)
+	ret = append(ret, "Reference:")
+	ret = append(ret, lines...)
+	return ret
 }
 
 func (t *transformer) rpcs(e entry) *pbast.Service {
