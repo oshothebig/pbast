@@ -190,6 +190,7 @@ func (t *transformer) notifications(e entry) *pbast.Service {
 	s := pbast.NewService(CamelCase(e.Name + "Notification"))
 	for _, notification := range notifications {
 		n := t.notification(notification)
+		n.Comment = t.genericComments(notification)
 		s.AddRPC(n)
 	}
 
