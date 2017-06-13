@@ -46,3 +46,7 @@ func IsSameType(t1, t2 Type) bool {
 	}
 	return reflect.DeepEqual(t1, t2)
 }
+
+type TypeAdder interface {
+	AddType(Type)
+}

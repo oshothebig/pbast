@@ -45,3 +45,9 @@ func (s *scope) allTypes() []pbast.Type {
 	}
 	return types
 }
+
+func (s *scope) reflectTo(adder pbast.TypeAdder) {
+	for _, t := range s.allTypes() {
+		adder.AddType(t)
+	}
+}

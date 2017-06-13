@@ -55,17 +55,17 @@ func (f *File) AddService(s *Service) *File {
 	return f
 }
 
-func (f *File) AddType(t Type) *File {
+func (f *File) AddType(t Type) {
 	if t == nil {
-		return f
+		return
 	}
 
 	switch t := t.(type) {
 	case *Message:
-		return f.AddMessage(t)
+		f.AddMessage(t)
 	case *Enum:
-		return f.AddEnum(t)
+		f.AddEnum(t)
 	default:
-		return f
+		// no-op
 	}
 }

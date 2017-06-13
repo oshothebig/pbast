@@ -38,18 +38,18 @@ func (m *Message) AddMessage(n *Message) *Message {
 	return m
 }
 
-func (m *Message) AddType(t Type) *Message {
+func (m *Message) AddType(t Type) {
 	if t == nil {
-		return m
+		return
 	}
 
 	switch t := t.(type) {
 	case *Message:
-		return m.AddMessage(t)
+		m.AddMessage(t)
 	case *Enum:
-		return m.AddEnum(t)
+		m.AddEnum(t)
 	default:
-		return m
+		// no-op
 	}
 }
 

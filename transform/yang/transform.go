@@ -89,9 +89,7 @@ func (t *transformer) module(e entry) *pbast.File {
 	n := t.notifications(e)
 	f.AddService(n)
 
-	for _, m := range t.topScope.allTypes() {
-		f.AddType(m)
-	}
+	t.topScope.reflectTo(f)
 	f.AddMessage(t.decimal64)
 
 	return f
@@ -272,9 +270,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		msg.AddField(field)
 	}
 
-	for _, t := range scope.allTypes() {
-		msg.AddType(t)
-	}
+	scope.reflectTo(msg)
 
 	return msg
 }
