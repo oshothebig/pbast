@@ -68,6 +68,11 @@ func (t *transformer) declare(m *pbast.Message) {
 	}
 }
 
+func (t *transformer) reflectTo(f *pbast.File) {
+	t.topScope.reflectTo(f)
+	f.AddMessage(t.decimal64)
+}
+
 func (t *transformer) module(e entry) *pbast.File {
 	namespace := e.Namespace().Name
 	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
@@ -89,8 +94,7 @@ func (t *transformer) module(e entry) *pbast.File {
 	n := t.notifications(e)
 	f.AddService(n)
 
-	t.topScope.reflectTo(f)
-	f.AddMessage(t.decimal64)
+	t.reflectTo(f)
 
 	return f
 }
