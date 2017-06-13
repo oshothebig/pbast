@@ -228,9 +228,10 @@ func (t *transformer) notifications(e entry) *pbast.Service {
 }
 
 func (t *transformer) notification(e entry) *pbast.RPC {
+	const common = "Notification"
 	method := CamelCase(e.Name)
-	in := method + "NotificationRequest"
-	out := method + "NotificationResponse"
+	in := buildName(method, common, "Request")
+	out := buildName(method, common, "Response")
 
 	rpc := pbast.NewRPC(method, pbast.NewReturnType(in), pbast.NewReturnType(out))
 

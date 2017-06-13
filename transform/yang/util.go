@@ -79,3 +79,13 @@ func constantName(s string) string {
 
 	return strings.Join(elems, "_")
 }
+
+func buildName(base, common, suffix string) string {
+	lowerBase := strings.ToLower(base)
+	lowerCommon := strings.ToLower(common)
+	if strings.HasSuffix(lowerBase, lowerCommon) {
+		return base + suffix
+	}
+
+	return base + common + suffix
+}
