@@ -63,9 +63,6 @@ func Transform(e *yang.Entry) *pbast.File {
 }
 
 func (t *transformer) declare(m *pbast.Message) {
-	if m == nil {
-		return
-	}
 	if err := t.topScope.addType(m); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
