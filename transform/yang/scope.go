@@ -18,6 +18,10 @@ func newScope() *scope {
 }
 
 func (s *scope) addType(t pbast.Type) error {
+	if t == nil {
+		return nil
+	}
+
 	old, ok := s.types[t.TypeName()]
 	if !ok {
 		name := t.TypeName()

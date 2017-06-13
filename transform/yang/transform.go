@@ -228,6 +228,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	}
 
 	msg := pbast.NewMessage(name)
+	scope := newScope()
 	msg.Comment = t.genericComments(e)
 	for index, child := range e.children() {
 		fieldNum := index + 1
@@ -247,7 +248,14 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		default:
 			inner, field = t.directory(child, fieldNum, false)
 		}
-		msg.AddType(inner).AddField(field)
+		if err := scope.addType(inner); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		msg.AddField(field)
+	}
+
+	for _, t := range scope.allTypes() {
+		msg.AddType(t)
 	}
 
 	return msg
