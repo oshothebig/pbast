@@ -1,5 +1,9 @@
 package pbast
 
+import (
+	"reflect"
+)
+
 type Type interface {
 	TypeName() string
 }
@@ -34,4 +38,11 @@ func (e Enum) TypeName() string {
 
 func (e Message) TypeName() string {
 	return e.Name
+}
+
+func IsSameType(t1, t2 Type) bool {
+	if t1.TypeName() != t2.TypeName() {
+		return false
+	}
+	return reflect.DeepEqual(t1, t2)
 }
