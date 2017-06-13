@@ -225,24 +225,23 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	msg.Comment = t.genericComments(e)
 	for index, child := range e.children() {
 		fieldNum := index + 1
+		var field *pbast.MessageField
+		var inner pbast.Type
 		switch {
 		// leaf-list case
 		case child.Type != nil && child.ListAttr != nil:
-			field, nested := t.leaf(child, fieldNum, true)
-			msg.AddType(nested).AddField(field)
+			field, inner = t.leaf(child, fieldNum, true)
 		// leaf case
 		case child.Type != nil:
-			field, nested := t.leaf(child, fieldNum, false)
-			msg.AddType(nested).AddField(field)
+			field, inner = t.leaf(child, fieldNum, false)
 		// list case
 		case child.ListAttr != nil:
-			inner, field := t.directory(child, fieldNum, true)
-			msg.AddMessage(inner).AddField(field)
+			inner, field = t.directory(child, fieldNum, true)
 		// others might be container case
 		default:
-			inner, field := t.directory(child, fieldNum, false)
-			msg.AddMessage(inner).AddField(field)
+			inner, field = t.directory(child, fieldNum, false)
 		}
+		msg.AddType(inner).AddField(field)
 	}
 
 	return msg
