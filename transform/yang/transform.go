@@ -23,6 +23,27 @@ var builtinMap = map[yang.TypeKind]pbast.Type{
 	yang.Ybinary: pbast.Bytes,
 }
 
+var builtinTypes = map[string]struct{}{
+	"int8":                struct{}{},
+	"int16":               struct{}{},
+	"int32":               struct{}{},
+	"int64":               struct{}{},
+	"uint8":               struct{}{},
+	"uint16":              struct{}{},
+	"unit32":              struct{}{},
+	"uint64":              struct{}{},
+	"string":              struct{}{},
+	"boolean":             struct{}{},
+	"enumeration":         struct{}{},
+	"bits":                struct{}{},
+	"binary":              struct{}{},
+	"leafref":             struct{}{},
+	"identityref":         struct{}{},
+	"empty":               struct{}{},
+	"union":               struct{}{},
+	"instance-identifier": struct{}{},
+}
+
 type transformer struct {
 	topScope  *scope
 	decimal64 *pbast.Message
@@ -266,7 +287,7 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 	// no direct builtin type mapping
 	// custom message is built
 	if typ == nil {
-		name := CamelCase(e.Name)
+		name := t.typeName(e)
 		switch e.Type.Kind {
 		// define at the top level
 		case yang.Ydecimal64:
@@ -299,6 +320,18 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 	}
 
 	return field, typ
+}
+
+// e must be a leaf entry
+func (t *transformer) typeName(e entry) string {
+	// if the type name matches one of builtin type names,
+	// it means typedef is not used
+	if _, ok := builtinTypes[e.Type.Name]; ok {
+		return CamelCase(e.Name)
+	}
+
+	// if typedef is used, use the type name instead of the leaf node name
+	return CamelCase(e.Type.Name)
 }
 
 func (t *transformer) customBits(name string, bits *yang.EnumType) *pbast.Message {
