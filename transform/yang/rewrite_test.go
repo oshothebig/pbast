@@ -55,6 +55,34 @@ func TestRemoveRootMessage(t *testing.T) {
 				AddMessage(pbast.NewMessage("Sub").
 					AddField(pbast.NewMessageField(pbast.Bool, "enabled", 1))),
 		},
+		{
+			pbast.NewFile("org.example").
+				AddMessage(pbast.NewMessage("Origin")).
+				AddMessage(pbast.NewMessage("Root").
+					AddMessage(pbast.NewMessage("Sub1").
+						AddField(pbast.NewMessageField(pbast.Bool, "enabled", 1))).
+					AddMessage(pbast.NewMessage("Sub2"))),
+			pbast.NewFile("org.example").
+				AddMessage(pbast.NewMessage("Origin")).
+				AddMessage(pbast.NewMessage("Sub1").
+					AddField(pbast.NewMessageField(pbast.Bool, "enabled", 1))).
+				AddMessage(pbast.NewMessage("Sub2")),
+		},
+		{
+			pbast.NewFile("org.example").
+				AddMessage(pbast.NewMessage("Origin")).
+				AddMessage(pbast.NewMessage("Root").
+					AddMessage(pbast.NewMessage("Sub1").
+						AddField(pbast.NewMessageField(pbast.Bool, "enabled", 1))).
+					AddMessage(pbast.NewMessage("Sub2"))).
+				AddMessage(pbast.NewMessage("Another")),
+			pbast.NewFile("org.example").
+				AddMessage(pbast.NewMessage("Origin")).
+				AddMessage(pbast.NewMessage("Sub1").
+					AddField(pbast.NewMessageField(pbast.Bool, "enabled", 1))).
+				AddMessage(pbast.NewMessage("Sub2")).
+				AddMessage(pbast.NewMessage("Another")),
+		},
 	}
 
 	for x, d := range table {

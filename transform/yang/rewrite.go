@@ -11,33 +11,61 @@ func RemoveRootMessage(f *pbast.File) *pbast.File {
 		return f
 	}
 
-	var ms []*pbast.Message
-	for _, m := range f.Messages {
-		if m.Name != "Root" {
-			ms = append(ms, m)
-			continue
-		}
+	index, root := rootMessage(f)
+	if root == nil {
+		return f
+	}
 
-		if len(m.Enums) != 0 || len(m.Fields) != 0 {
-			ms = append(ms, m)
-			continue
-		}
+	messages := make([]*pbast.Message, 0, len(f.Messages)-1)
+	messages = append(messages, f.Messages[:index]...)
+	messages = append(messages, f.Messages[index+1:]...)
 
-		if len(m.Messages) > 1 {
-			ms = append(ms, m)
-			continue
-		}
+	names := map[string]struct{}{}
+	for _, x := range messages {
+		names[x.Name] = struct{}{}
+	}
+	for _, x := range f.Enums {
+		names[x.Name] = struct{}{}
+	}
+	for _, x := range f.Services {
+		names[x.Name] = struct{}{}
+	}
 
-		if len(m.Messages) == 0 {
-			continue
+	for _, m := range root.Messages {
+		// naming overlap is found, then root message cann't be removed
+		if _, ok := names[m.Name]; ok {
+			return f
 		}
+	}
 
-		ms = append(ms, m.Messages[0])
+	if len(root.Fields) != 0 {
+		return f
 	}
 
 	ret := *f
-	ret.Messages = ms
+	if len(root.Messages) == 0 {
+		ret.Messages = messages
+		return &ret
+	}
+
+	ret.Enums = append(ret.Enums, root.Enums...)
+	newMessages := make([]*pbast.Message, 0, len(f.Messages)+len(root.Messages)-1)
+	newMessages = append(newMessages, f.Messages[:index]...)
+	newMessages = append(newMessages, root.Messages...)
+	newMessages = append(newMessages, f.Messages[index+1:]...)
+	ret.Messages = newMessages
+
 	return &ret
+}
+
+func rootMessage(f *pbast.File) (int, *pbast.Message) {
+	for i, m := range f.Messages {
+		if m.Name == "Root" {
+			return i, m
+		}
+	}
+
+	return -1, nil
 }
 
 func CompleteZeroInEnum(f *pbast.File) *pbast.File {
