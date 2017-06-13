@@ -1,6 +1,8 @@
 package yang
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -22,7 +24,7 @@ var builtinMap = map[yang.TypeKind]pbast.Type{
 }
 
 type transformer struct {
-	topScope  []*pbast.Message
+	topScope  *scope
 	decimal64 *pbast.Message
 }
 
@@ -32,7 +34,9 @@ func Transform(e *yang.Entry) *pbast.File {
 		return nil
 	}
 
-	t := &transformer{}
+	t := &transformer{
+		topScope: newScope(),
+	}
 
 	return t.module(entry{e})
 }
@@ -41,7 +45,9 @@ func (t *transformer) declare(m *pbast.Message) {
 	if m == nil {
 		return
 	}
-	t.topScope = append(t.topScope, m)
+	if err := t.topScope.addType(m); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 func (t *transformer) module(e entry) *pbast.File {
@@ -65,8 +71,8 @@ func (t *transformer) module(e entry) *pbast.File {
 	n := t.notifications(e)
 	f.AddService(n)
 
-	for _, m := range t.topScope {
-		f.AddMessage(m)
+	for _, m := range t.topScope.allTypes() {
+		f.AddType(m)
 	}
 	f.AddMessage(t.decimal64)
 
