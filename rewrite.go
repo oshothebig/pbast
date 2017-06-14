@@ -1,6 +1,18 @@
 package pbast
 
-func flatten(m *Message) []*Message {
+func LiftMessage(f *File) *File {
+	dummy := &Message{}
+	dummy.Messages = append(dummy.Messages, f.Messages...)
+	dummy.Enums = append(dummy.Enums, f.Enums...)
+
+	messages := flattenMessage(dummy)[1:] // omit the first element which corresponds to dummy
+
+	newFile := *f
+	newFile.Messages = messages
+	return &newFile
+}
+
+func flattenMessage(m *Message) []*Message {
 	if len(m.Messages) == 0 {
 		return []*Message{m}
 	}
@@ -25,7 +37,7 @@ func flatten(m *Message) []*Message {
 	var grandChildren []*Message // the second half of the flattened nodes
 
 	for _, child := range m.Messages {
-		flatten := flatten(child)
+		flatten := flattenMessage(child)
 		// always satisfies head.Name == child.Name because of the design
 		head, tail := flatten[0], flatten[1:]
 		// name conflict, it can't be flattened
@@ -49,10 +61,23 @@ func flatten(m *Message) []*Message {
 	return append(children, grandChildren...)
 }
 
+func LiftEnum(f *File) *File {
+	dummy := &Message{}
+	dummy.Messages = append(dummy.Messages, f.Messages...)
+	dummy.Enums = append(dummy.Enums, f.Enums...)
+
+	lifted := flattenEnum(dummy)
+
+	newFile := *f
+	newFile.Messages = lifted.Messages
+	newFile.Enums = lifted.Enums
+	return &newFile
+}
+
 // Right now, this searches on depth first basis, but modification is needed
 // because it could happen that deeper nodes are pulled up even if there are
 // shallow nodes with the same name
-func enumFlatten(m *Message) *Message {
+func flattenEnum(m *Message) *Message {
 	if len(m.Messages) == 0 {
 		return m
 	}
@@ -70,7 +95,7 @@ func enumFlatten(m *Message) *Message {
 
 	messages := make([]*Message, 0, len(m.Messages))
 	for _, child := range m.Messages {
-		child = enumFlatten(child)
+		child = flattenEnum(child)
 		if len(child.Enums) == 0 {
 			messages = append(messages, child)
 			continue

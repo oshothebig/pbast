@@ -5,247 +5,411 @@ import (
 	"testing"
 )
 
-func TestFlatten(t *testing.T) {
+func TestLiftMessage(t *testing.T) {
 	table := []struct {
-		in       *Message
-		expected []*Message
+		in       *File
+		expected *File
 	}{
 		{
-			NewMessage("A"),
-			[]*Message{NewMessage("A")},
-		},
-		{
-			NewMessage("A").
-				AddMessage(NewMessage("B")),
-			[]*Message{NewMessage("A"), NewMessage("B")},
-		},
-		{
-			NewMessage("A").
-				AddMessage(NewMessage("B").
-					AddMessage(NewMessage("C"))).
-				AddMessage(NewMessage("D")),
-			[]*Message{NewMessage("A"), NewMessage("B"), NewMessage("D"), NewMessage("C")},
-		},
-		{
-			NewMessage("A").
-				AddMessage(NewMessage("B").
-					AddMessage(NewMessage("B"))).
-				AddMessage(NewMessage("C")),
-			[]*Message{
-				NewMessage("A"),
-				NewMessage("B").
-					AddMessage(NewMessage("B")),
-				NewMessage("C"),
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{Name: "A"},
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{Name: "A"},
+				},
 			},
 		},
 		{
-			NewMessage("A").
-				AddMessage(NewMessage("B").
-					AddMessage(NewMessage("B").
-						AddMessage(NewMessage("C")))).
-				AddMessage(NewMessage("D")),
-			[]*Message{
-				NewMessage("A"),
-				NewMessage("B").AddMessage(NewMessage("B")),
-				NewMessage("D"),
-				NewMessage("C"),
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "A",
+						Messages: []*Message{
+							&Message{
+								Name: "B",
+							},
+						},
+					},
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{Name: "A"},
+					&Message{Name: "B"},
+				},
 			},
 		},
 		{
-			NewMessage("A").
-				AddMessage(NewMessage("B").
-					AddMessage(NewMessage("B").
-						AddMessage(NewMessage("C")))).
-				AddMessage(NewMessage("C")),
-			[]*Message{
-				NewMessage("A"),
-				NewMessage("B").
-					AddMessage(NewMessage("B")).
-					AddMessage(NewMessage("C")),
-				NewMessage("C"),
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "A",
+						Messages: []*Message{
+							&Message{
+								Name: "B",
+								Messages: []*Message{
+									&Message{Name: "C"},
+								},
+							},
+							&Message{Name: "D"},
+						},
+					},
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{Name: "A"},
+					&Message{Name: "B"},
+					&Message{Name: "D"},
+					&Message{Name: "C"},
+				},
 			},
 		},
 		{
-			NewMessage("A").
-				AddMessage(NewMessage("B").
-					AddMessage(NewMessage("B").
-						AddMessage(NewMessage("C").
-							AddMessage(NewMessage("D"))))).
-				AddMessage(NewMessage("C")),
-			[]*Message{
-				NewMessage("A"),
-				NewMessage("B").
-					AddMessage(NewMessage("B")).
-					AddMessage(NewMessage("C")),
-				NewMessage("C"),
-				NewMessage("D"),
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A").
+						AddMessage(NewMessage("B").
+							AddMessage(NewMessage("C"))).
+						AddMessage(NewMessage("D")),
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A"),
+					NewMessage("B"),
+					NewMessage("D"),
+					NewMessage("C"),
+				},
+			},
+		},
+		{
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A").
+						AddMessage(NewMessage("B").
+							AddMessage(NewMessage("B"))).
+						AddMessage(NewMessage("C")),
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A"),
+					NewMessage("B").
+						AddMessage(NewMessage("B")),
+					NewMessage("C"),
+				},
+			},
+		},
+		{
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A").
+						AddMessage(NewMessage("B").
+							AddMessage(NewMessage("B").
+								AddMessage(NewMessage("C")))).
+						AddMessage(NewMessage("D")),
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A"),
+					NewMessage("B").AddMessage(NewMessage("B")),
+					NewMessage("D"),
+					NewMessage("C"),
+				},
+			},
+		},
+		{
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A").
+						AddMessage(NewMessage("B").
+							AddMessage(NewMessage("B").
+								AddMessage(NewMessage("C")))).
+						AddMessage(NewMessage("C")),
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A"),
+					NewMessage("B").
+						AddMessage(NewMessage("B")).
+						AddMessage(NewMessage("C")),
+					NewMessage("C")},
+			},
+		},
+		{
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A").
+						AddMessage(NewMessage("B").
+							AddMessage(NewMessage("B").
+								AddMessage(NewMessage("C").
+									AddMessage(NewMessage("D"))))).
+						AddMessage(NewMessage("C")),
+				},
+			},
+			&File{
+				Package: "com.example",
+				Messages: []*Message{
+					NewMessage("A"),
+					NewMessage("B").
+						AddMessage(NewMessage("B")).
+						AddMessage(NewMessage("C")),
+					NewMessage("C"),
+					NewMessage("D"),
+				},
 			},
 		},
 	}
 
 	for x, d := range table {
-		if actual := flatten(d.in); !reflect.DeepEqual(actual, d.expected) {
+		if actual := LiftMessage(d.in); !reflect.DeepEqual(actual, d.expected) {
 			t.Errorf("#%d: got %v, want %v", x, actual, d.expected)
 		}
 	}
 }
 
-func TestEnumFlatten(t *testing.T) {
+func TestLiftEnum(t *testing.T) {
 	table := []struct {
-		in       Message
-		expected Message
+		in       File
+		expected File
 	}{
 		{
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-				},
-			},
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-				},
-			},
-		},
-		{
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-				},
+			File{
+				Package: "com.example",
 				Messages: []*Message{
 					&Message{
-						Name: "Inner",
-						Enums: []*Enum{
-							&Enum{Name: "E3"},
-						},
-					},
-				},
-			},
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-					&Enum{Name: "E3"},
-				},
-				Messages: []*Message{
-					&Message{Name: "Inner"},
-				},
-			},
-		},
-		{
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-				},
-				Messages: []*Message{
-					&Message{
-						Name: "Inner",
+						Name: "Root",
 						Enums: []*Enum{
 							&Enum{Name: "E1"},
+							&Enum{Name: "E2"},
 						},
 					},
 				},
 			},
-			Message{
-				Name: "Root",
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+					},
+				},
 				Enums: []*Enum{
 					&Enum{Name: "E1"},
 					&Enum{Name: "E2"},
-				},
+				}},
+		},
+		{
+			File{
+				Package: "com.example",
 				Messages: []*Message{
 					&Message{
-						Name: "Inner",
+						Name: "Root",
 						Enums: []*Enum{
 							&Enum{Name: "E1"},
-						},
-					},
-				},
-			},
-		},
-		{
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-				},
-				Messages: []*Message{
-					&Message{
-						Name: "Inner1",
-						Enums: []*Enum{
-							&Enum{Name: "E3"},
-						},
-					},
-					&Message{
-						Name: "Inner2",
-						Enums: []*Enum{
-							&Enum{Name: "E3"},
-						},
-					},
-				},
-			},
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-					&Enum{Name: "E3"},
-				},
-				Messages: []*Message{
-					&Message{
-						Name: "Inner1",
-					},
-					&Message{
-						Name: "Inner2",
-						Enums: []*Enum{
-							&Enum{Name: "E3"},
-						},
-					},
-				},
-			},
-		},
-		{
-			Message{
-				Name: "Root",
-				Enums: []*Enum{
-					&Enum{Name: "E1"},
-					&Enum{Name: "E2"},
-					&Enum{Name: "E3"},
-				},
-				Messages: []*Message{
-					&Message{
-						Name: "Inner1",
-						Enums: []*Enum{
-							&Enum{Name: "E4"},
+							&Enum{Name: "E2"},
 						},
 						Messages: []*Message{
 							&Message{
-								Name: "InnerMost",
+								Name: "Inner",
+								Enums: []*Enum{
+									&Enum{Name: "E3"},
+								},
+							},
+						},
+					},
+				},
+			},
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Messages: []*Message{
+							&Message{Name: "Inner"},
+						},
+					},
+				},
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+					&Enum{Name: "E3"},
+				},
+			},
+		},
+		{
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Enums: []*Enum{
+							&Enum{Name: "E1"},
+							&Enum{Name: "E2"},
+						},
+						Messages: []*Message{
+							&Message{
+								Name: "Inner",
+								Enums: []*Enum{
+									&Enum{Name: "E1"},
+								},
+							},
+						},
+					},
+				},
+			},
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Messages: []*Message{
+							&Message{
+								Name: "Inner",
+								Enums: []*Enum{
+									&Enum{Name: "E1"},
+								},
+							},
+						},
+					},
+				},
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+				},
+			},
+		},
+		{
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Enums: []*Enum{
+							&Enum{Name: "E1"},
+							&Enum{Name: "E2"},
+						},
+						Messages: []*Message{
+							&Message{
+								Name: "Inner1",
+								Enums: []*Enum{
+									&Enum{Name: "E3"},
+								},
+							},
+							&Message{
+								Name: "Inner2",
+								Enums: []*Enum{
+									&Enum{Name: "E3"},
+								},
+							},
+						},
+					},
+				},
+			},
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Messages: []*Message{
+							&Message{
+								Name: "Inner1",
+							},
+							&Message{
+								Name: "Inner2",
+								Enums: []*Enum{
+									&Enum{Name: "E3"},
+								},
+							},
+						},
+					},
+				},
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+					&Enum{Name: "E3"},
+				},
+			},
+		},
+		{
+			File{
+				Package: "com.example",
+				Messages: []*Message{
+					&Message{
+						Name: "Root",
+						Enums: []*Enum{
+							&Enum{Name: "E1"},
+							&Enum{Name: "E2"},
+							&Enum{Name: "E3"},
+						},
+						Messages: []*Message{
+							&Message{
+								Name: "Inner1",
+								Enums: []*Enum{
+									&Enum{Name: "E4"},
+								},
+								Messages: []*Message{
+									&Message{
+										Name: "InnerMost",
+										Enums: []*Enum{
+											&Enum{Name: "E5"},
+										},
+									},
+								},
+							},
+							&Message{
+								Name: "Inner2",
 								Enums: []*Enum{
 									&Enum{Name: "E5"},
 								},
 							},
 						},
 					},
+				},
+			},
+			File{
+				Package: "com.example",
+				Messages: []*Message{
 					&Message{
-						Name: "Inner2",
-						Enums: []*Enum{
-							&Enum{Name: "E5"},
+						Name: "Root",
+						Messages: []*Message{
+							&Message{
+								Name: "Inner1",
+								Messages: []*Message{
+									&Message{
+										Name: "InnerMost",
+									},
+								},
+							},
+							&Message{
+								Name: "Inner2",
+								Enums: []*Enum{
+									&Enum{Name: "E5"},
+								},
+							},
 						},
 					},
 				},
-			},
-			Message{
-				Name: "Root",
 				Enums: []*Enum{
 					&Enum{Name: "E1"},
 					&Enum{Name: "E2"},
@@ -253,28 +417,12 @@ func TestEnumFlatten(t *testing.T) {
 					&Enum{Name: "E4"},
 					&Enum{Name: "E5"},
 				},
-				Messages: []*Message{
-					&Message{
-						Name: "Inner1",
-						Messages: []*Message{
-							&Message{
-								Name: "InnerMost",
-							},
-						},
-					},
-					&Message{
-						Name: "Inner2",
-						Enums: []*Enum{
-							&Enum{Name: "E5"},
-						},
-					},
-				},
 			},
 		},
 	}
 
 	for x, d := range table {
-		if actual := enumFlatten(&d.in); !reflect.DeepEqual(actual, &d.expected) {
+		if actual := LiftEnum(&d.in); !reflect.DeepEqual(actual, &d.expected) {
 			t.Errorf("#%d: got %v, want %v", x, actual, d.expected)
 		}
 	}
