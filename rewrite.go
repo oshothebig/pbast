@@ -82,8 +82,8 @@ func flattenEnum(m *Message) *Message {
 		return m
 	}
 
-	root := &Message{}
-	*root = *m
+	root := *m
+	root.Messages = nil
 
 	names := map[string]struct{}{}
 	for _, e := range m.Enums {
@@ -93,30 +93,26 @@ func flattenEnum(m *Message) *Message {
 		names[x.Name] = struct{}{}
 	}
 
-	messages := make([]*Message, 0, len(m.Messages))
 	for _, child := range m.Messages {
 		child = flattenEnum(child)
 		if len(child.Enums) == 0 {
-			messages = append(messages, child)
+			root.AddMessage(child)
 			continue
 		}
 
-		var enums []*Enum
+		newChild := *child
+		newChild.Enums = nil
 		for _, e := range child.Enums {
 			if _, ok := names[e.Name]; !ok {
 				names[e.Name] = struct{}{}
 				root.AddEnum(e)
 			} else {
-				enums = append(enums, e)
+				newChild.AddEnum(e)
 			}
 		}
 
-		newChild := &Message{}
-		*newChild = *child
-		newChild.Enums = enums
-		messages = append(messages, newChild)
+		root.AddMessage(&newChild)
 	}
 
-	root.Messages = messages
-	return root
+	return &root
 }
