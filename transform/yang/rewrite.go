@@ -20,20 +20,20 @@ func RemoveRootMessage(f *pbast.File) *pbast.File {
 	messages = append(messages, f.Messages[:index]...)
 	messages = append(messages, f.Messages[index+1:]...)
 
-	names := map[string]struct{}{}
+	names := newStringSet()
 	for _, x := range messages {
-		names[x.Name] = struct{}{}
+		names.add(x.Name)
 	}
 	for _, x := range f.Enums {
-		names[x.Name] = struct{}{}
+		names.add(x.Name)
 	}
 	for _, x := range f.Services {
-		names[x.Name] = struct{}{}
+		names.add(x.Name)
 	}
 
 	for _, m := range root.Messages {
 		// naming overlap is found, then root message cann't be removed
-		if _, ok := names[m.Name]; ok {
+		if names.contains(m.Name) {
 			return f
 		}
 	}

@@ -23,7 +23,7 @@ var builtinMap = map[yang.TypeKind]pbast.Type{
 	yang.Ybinary: pbast.Bytes,
 }
 
-var builtinTypes = map[string]struct{}{
+var builtinTypes = stringSet{
 	"int8":                struct{}{},
 	"int16":               struct{}{},
 	"int32":               struct{}{},
@@ -324,7 +324,7 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 func (t *transformer) typeName(e entry) string {
 	// if the type name matches one of builtin type names,
 	// it means typedef is not used
-	if _, ok := builtinTypes[e.Type.Name]; ok {
+	if builtinTypes.contains(e.Type.Name) {
 		return CamelCase(e.Name)
 	}
 
