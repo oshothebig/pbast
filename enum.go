@@ -20,6 +20,18 @@ func (e *Enum) AddField(f *EnumField) *Enum {
 	return e
 }
 
+func (e *Enum) identifiers() stringSet {
+	if len(e.Fields) == 0 {
+		return newStringSet()
+	}
+
+	set := newStringSet()
+	for _, f := range e.Fields {
+		set.add(f.Name)
+	}
+	return set
+}
+
 type EnumField struct {
 	Name    string
 	Index   int
