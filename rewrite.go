@@ -74,6 +74,21 @@ func LiftEnum(f *File) *File {
 	return &newFile
 }
 
+func bfsEnum(m *Message) []*Enum {
+	queue := []*Message{m}
+
+	var enums []*Enum
+
+	for len(queue) != 0 {
+		pop := queue[0]
+		queue = queue[1:]
+		enums = append(enums, pop.Enums...)
+		queue = append(queue, pop.Messages...)
+	}
+
+	return enums
+}
+
 // Right now, this searches on depth first basis, but modification is needed
 // because it could happen that deeper nodes are pulled up even if there are
 // shallow nodes with the same name

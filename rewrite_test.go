@@ -427,3 +427,144 @@ func TestLiftEnum(t *testing.T) {
 		}
 	}
 }
+
+func TestBfsEnum(t *testing.T) {
+	table := []struct {
+		in       *Message
+		expected []*Enum
+	}{
+		{
+			&Message{
+				Name: "Root",
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+				},
+			},
+			[]*Enum{
+				&Enum{Name: "E1"},
+				&Enum{Name: "E2"},
+			},
+		},
+		{
+			&Message{
+				Name: "Root",
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+				},
+				Messages: []*Message{
+					&Message{
+						Name: "Inner",
+						Enums: []*Enum{
+							&Enum{Name: "E3"},
+						},
+					},
+				},
+			},
+			[]*Enum{
+				&Enum{Name: "E1"},
+				&Enum{Name: "E2"},
+				&Enum{Name: "E3"},
+			},
+		},
+		{
+			&Message{
+				Name: "Root",
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+				},
+				Messages: []*Message{
+					&Message{
+						Name: "Inner",
+						Enums: []*Enum{
+							&Enum{Name: "E1"},
+						},
+					},
+				},
+			},
+			[]*Enum{
+				&Enum{Name: "E1"},
+				&Enum{Name: "E2"},
+				&Enum{Name: "E1"},
+			},
+		},
+		{
+			&Message{
+				Name: "Root",
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+				},
+				Messages: []*Message{
+					&Message{
+						Name: "Inner1",
+						Enums: []*Enum{
+							&Enum{Name: "E3"},
+						},
+					},
+					&Message{
+						Name: "Inner2",
+						Enums: []*Enum{
+							&Enum{Name: "E3"},
+						},
+					},
+				},
+			},
+			[]*Enum{
+				&Enum{Name: "E1"},
+				&Enum{Name: "E2"},
+				&Enum{Name: "E3"},
+				&Enum{Name: "E3"},
+			},
+		},
+		{
+			&Message{
+				Name: "Root",
+				Enums: []*Enum{
+					&Enum{Name: "E1"},
+					&Enum{Name: "E2"},
+					&Enum{Name: "E3"},
+				},
+				Messages: []*Message{
+					&Message{
+						Name: "Inner1",
+						Enums: []*Enum{
+							&Enum{Name: "E4"},
+						},
+						Messages: []*Message{
+							&Message{
+								Name: "InnerMost",
+								Enums: []*Enum{
+									&Enum{Name: "E5"},
+								},
+							},
+						},
+					},
+					&Message{
+						Name: "Inner2",
+						Enums: []*Enum{
+							&Enum{Name: "E5"},
+						},
+					},
+				},
+			},
+			[]*Enum{
+				&Enum{Name: "E1"},
+				&Enum{Name: "E2"},
+				&Enum{Name: "E3"},
+				&Enum{Name: "E4"},
+				&Enum{Name: "E5"},
+				&Enum{Name: "E5"},
+			},
+		},
+	}
+
+	for x, d := range table {
+		if actual := bfsEnum(d.in); !reflect.DeepEqual(actual, d.expected) {
+			t.Errorf("#%d: got %v, want %v", x, actual, d.expected)
+		}
+	}
+
+}
