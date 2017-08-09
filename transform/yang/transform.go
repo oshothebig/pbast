@@ -45,8 +45,9 @@ var builtinTypes = stringSet{
 }
 
 type transformer struct {
-	topScope  *scope
-	decimal64 *pbast.Message
+	topScope    *scope
+	decimal64   *pbast.Message
+	emptyNeeded bool
 }
 
 // e must be YANG module
@@ -71,6 +72,9 @@ func (t *transformer) declare(m *pbast.Message) {
 func (t *transformer) reflectTo(f *pbast.File) {
 	t.topScope.reflectTo(f)
 	f.AddMessage(t.decimal64)
+	if t.emptyNeeded {
+		f.AddImport(pbast.NewImport("google/protobuf/empty.proto"))
+	}
 }
 
 func (t *transformer) module(e entry) *pbast.File {
@@ -297,8 +301,12 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 		// define as a nested type
 		case yang.Yenum:
 			typ = t.customEnum(name, e.Type.Enum)
+		// use google.protobuf.Empty
+		case yang.Yempty:
+			t.emptyNeeded = true
+			typ = pbast.Empty
 		// not implemented
-		case yang.Yunion, yang.Yempty, yang.Yleafref,
+		case yang.Yunion, yang.Yleafref,
 			yang.Yidentityref, yang.YinstanceIdentifier:
 			return nil, nil
 		}
@@ -313,7 +321,8 @@ func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.Mess
 		Comment:  t.genericComments(e),
 	}
 
-	if e.Type.Kind == yang.Ydecimal64 {
+	switch e.Type.Kind {
+	case yang.Ydecimal64, yang.Yempty:
 		return field, nil
 	}
 
