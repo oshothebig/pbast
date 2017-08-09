@@ -6,6 +6,7 @@ type Message struct {
 	Fields   []*MessageField
 	Enums    []*Enum
 	Messages []*Message
+	OneOfs   []*OneOf
 }
 
 func NewMessage(name string) *Message {
@@ -35,6 +36,14 @@ func (m *Message) AddMessage(n *Message) *Message {
 		return m
 	}
 	m.Messages = append(m.Messages, n)
+	return m
+}
+
+func (m *Message) AddOneOf(o *OneOf) *Message {
+	if o == nil {
+		return m
+	}
+	m.OneOfs = append(m.OneOfs, o)
 	return m
 }
 

@@ -32,6 +32,10 @@ func (p *printer) Fprint(w io.Writer, n pbast.Node) {
 		p.printMessage(w, n)
 	case *pbast.MessageField:
 		p.printMessageField(w, n)
+	case *pbast.OneOf:
+		p.printOneOf(w, n)
+	case *pbast.OneOfField:
+		p.printOneOfField(w, n)
 	case *pbast.FieldOption:
 		p.printFieldOption(w, n)
 	case *pbast.Enum:
@@ -131,6 +135,10 @@ func (p *printer) printMessage(w io.Writer, m *pbast.Message) {
 	for _, m := range m.Messages {
 		p.Fprint(indent, m)
 	}
+	// oneofs
+	for _, o := range m.OneOfs {
+		p.Fprint(indent, o)
+	}
 
 	fmt.Fprintf(w, "}")
 	fmt.Fprintln(w)
@@ -143,6 +151,44 @@ func (p *printer) printMessageField(w io.Writer, f *pbast.MessageField) {
 	if f.Repeated {
 		fmt.Fprintf(w, "repeated ")
 	}
+	fmt.Fprintf(w, "%s %s = %d", f.Type, f.Name, f.Index)
+
+	if len(f.Options) > 0 {
+		fmt.Fprint(w, " [")
+		p.Fprint(w, f.Options[0])
+
+		for _, f := range f.Options[1:] {
+			fmt.Fprint(w, ", ")
+			p.Fprint(w, f)
+		}
+		fmt.Fprint(w, "]")
+	}
+	fmt.Fprint(w, ";")
+	fmt.Fprintln(w)
+}
+
+func (p *printer) printOneOf(w io.Writer, o *pbast.OneOf) {
+	// comment
+	p.printComment(w, o.Comment)
+
+	// name
+	fmt.Fprintf(w, "oneof %s {", o.Name)
+	fmt.Fprintln(w)
+
+	indent := pbast.NewSpaceWriter(w, shift)
+	// fields
+	for _, f := range o.Fields {
+		p.Fprint(indent, f)
+	}
+
+	fmt.Fprintf(w, "}")
+	fmt.Fprintln(w)
+}
+
+func (p *printer) printOneOfField(w io.Writer, f *pbast.OneOfField) {
+	// comment
+	p.printComment(w, f.Comment)
+
 	fmt.Fprintf(w, "%s %s = %d", f.Type, f.Name, f.Index)
 
 	if len(f.Options) > 0 {

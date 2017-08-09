@@ -120,6 +120,20 @@ message Root {
 		"string name = 0 [age = 21, tall = 170];\n",
 	},
 	{
+		&pbast.OneOf{
+			Name: "value",
+			Fields: []*pbast.OneOfField{
+				pbast.NewOneOfField(pbast.String, "string", 1),
+				pbast.NewOneOfField(pbast.String, "name", 2),
+			},
+		},
+		`oneof value {
+  string string = 1;
+  string name = 2;
+}
+`,
+	},
+	{
 		pbast.NewEnum("sex").
 			AddField(pbast.NewEnumField("male", 1)).
 			AddField(pbast.NewEnumField("female", 2)),

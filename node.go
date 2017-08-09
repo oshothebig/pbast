@@ -41,6 +41,10 @@ func (o *OneOf) name() string {
 	return "oneOf"
 }
 
+func (f *OneOfField) name() string {
+	return "oneOfField"
+}
+
 func (e *Enum) name() string {
 	return "enum"
 }

@@ -82,8 +82,9 @@ func NewOption(name, value string) *Option {
 }
 
 type OneOf struct {
-	Name   string
-	Fields []*OneOfField
+	Name    string
+	Comment Comment
+	Fields  []*OneOfField
 }
 
 func NewOneOf(name string) *OneOf {
@@ -104,6 +105,7 @@ type OneOfField struct {
 	Type    string
 	Name    string
 	Index   int
+	Comment Comment
 	Options []*Option
 }
 
