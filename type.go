@@ -32,6 +32,46 @@ const (
 	Bytes    BuiltinType = "bytes"
 )
 
+type WellKnownType string
+
+func (t WellKnownType) TypeName() string {
+	return string(t)
+}
+
+const (
+	Any             WellKnownType = "google.protobuf.Any"
+	Api             WellKnownType = "google.protobuf.Api"
+	BoolValue       WellKnownType = "google.protobuf.BoolValue"
+	BytesValue      WellKnownType = "google.protobuf.BytesValue"
+	DoubleValue     WellKnownType = "google.protobuf.DoubleValue"
+	Duration        WellKnownType = "google.protobuf.Duration"
+	Empty           WellKnownType = "google.protobuf.Empty"
+	WellKnownEnum   WellKnownType = "google.protobuf.Enum"
+	EnumValue       WellKnownType = "google.protobuf.EnumValue"
+	WellKnownField  WellKnownType = "google.protobuf.Field"
+	Cardinality     WellKnownType = "google.protobuf.Cardinality"
+	Kind            WellKnownType = "google.protobuf.Kind"
+	FieldMask       WellKnownType = "google.protobuf.FieldMask"
+	FloatValue      WellKnownType = "google.protobuf.FloatValue"
+	Int32Value      WellKnownType = "google.protobuf.Int32Value"
+	Int64Value      WellKnownType = "google.protobuf.Int64Value"
+	ListValue       WellKnownType = "google.protobuf.ListValue"
+	Method          WellKnownType = "google.protobuf.Method"
+	Mixin           WellKnownType = "google.protobuf.Mixin"
+	NullValue       WellKnownType = "google.protobuf.NullValue"
+	WellKnownOption WellKnownType = "google.protobuf.Option"
+	SourceContext   WellKnownType = "google.protobuf.SourceContext"
+	StringValue     WellKnownType = "google.protobuf.StringValue"
+	WellKnownStruct WellKnownType = "google.protobuf.Struct"
+	WellKnownSyntax WellKnownType = "google.protobuf.Syntax"
+	Timestamp       WellKnownType = "google.protobuf.Timestamp"
+	UInt32Value     WellKnownType = "google.protobuf.UInt32Value"
+	UInt64Value     WellKnownType = "google.protobuf.UInt64Value"
+	Value           WellKnownType = "google.protobuf.Value"
+
+// Define well know type for "Type" when coming up with how to resolve naming conflict
+)
+
 func (e Enum) TypeName() string {
 	return e.Name
 }
