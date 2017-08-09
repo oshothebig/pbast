@@ -103,13 +103,15 @@ func (o *OneOf) AddField(f *OneOfField) *OneOf {
 type OneOfField struct {
 	Type    string
 	Name    string
+	Index   int
 	Options []*Option
 }
 
-func NewOneOfField(t Type, name string) *OneOfField {
+func NewOneOfField(t Type, name string, index int) *OneOfField {
 	return &OneOfField{
-		Type: t.TypeName(),
-		Name: name,
+		Type:  t.TypeName(),
+		Name:  name,
+		Index: index,
 	}
 }
 
