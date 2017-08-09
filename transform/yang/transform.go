@@ -268,10 +268,10 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 			field, inner = t.leaf(child, fieldNum, false)
 		// list case
 		case child.ListAttr != nil:
-			inner, field = t.directory(child, fieldNum, true)
+			field, inner = t.directory(child, fieldNum, true)
 		// others might be container case
 		default:
-			inner, field = t.directory(child, fieldNum, false)
+			field, inner = t.directory(child, fieldNum, false)
 		}
 		if err := scope.addType(inner); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -361,7 +361,7 @@ func (t *transformer) customEnum(name string, e *yang.EnumType) *pbast.Enum {
 	return enum
 }
 
-func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.Message, *pbast.MessageField) {
+func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.MessageField, *pbast.Message) {
 	fieldName := underscoreCase(e.Name)
 	typeName := CamelCase(e.Name)
 
@@ -374,5 +374,5 @@ func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.Messa
 		Comment:  t.genericComments(e),
 	}
 
-	return inner, field
+	return field, inner
 }
