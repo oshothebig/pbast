@@ -258,23 +258,19 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	for index, child := range e.children() {
 		fieldNum := index + 1
 		var field *pbast.MessageField
-		var inner pbast.Type
 		switch {
 		// leaf-list case
 		case child.Type != nil && child.ListAttr != nil:
-			field, inner = t.leaf(child, fieldNum, true)
+			field = t.leaf(scope, child, fieldNum, true)
 		// leaf case
 		case child.Type != nil:
-			field, inner = t.leaf(child, fieldNum, false)
+			field = t.leaf(scope, child, fieldNum, false)
 		// list case
 		case child.ListAttr != nil:
-			field, inner = t.directory(child, fieldNum, true)
+			field = t.directory(scope, child, fieldNum, true)
 		// others might be container case
 		default:
-			field, inner = t.directory(child, fieldNum, false)
-		}
-		if err := scope.addType(inner); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			field = t.directory(scope, child, fieldNum, false)
 		}
 		msg.AddField(field)
 	}
@@ -284,49 +280,56 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	return msg
 }
 
-func (t *transformer) leaf(e entry, index int, repeated bool) (field *pbast.MessageField, nested pbast.Type) {
-	typ := builtinMap[e.Type.Kind]
-	// no direct builtin type mapping
-	// custom message is built
+func (t *transformer) leaf(scope *scope, e entry, index int, repeated bool) *pbast.MessageField {
+	typ := t.translateType(e.Type, t.typeName(e))
 	if typ == nil {
-		name := t.typeName(e)
-		switch e.Type.Kind {
-		// define at the top level
-		case yang.Ydecimal64:
-			t.decimal64 = decimal64Message
-			typ = decimal64Message
-		// define as a nested type
-		case yang.Ybits:
-			typ = t.customBits(name, e.Type.Bit)
-		// define as a nested type
-		case yang.Yenum:
-			typ = t.customEnum(name, e.Type.Enum)
-		// use google.protobuf.Empty
-		case yang.Yempty:
-			t.emptyNeeded = true
-			typ = pbast.Empty
-		// not implemented
-		case yang.Yunion, yang.Yleafref,
-			yang.Yidentityref, yang.YinstanceIdentifier:
-			return nil, nil
-		}
+		return nil
 	}
 
-	name := underscoreCase(e.Name)
-	field = &pbast.MessageField{
+	field := &pbast.MessageField{
 		Repeated: repeated,
 		Type:     typ.TypeName(),
-		Name:     name,
+		Name:     underscoreCase(e.Name),
 		Index:    index,
 		Comment:  t.genericComments(e),
 	}
-
-	switch e.Type.Kind {
-	case yang.Ydecimal64, yang.Yempty:
-		return field, nil
+	switch typ {
+	case decimal64Message:
+		t.decimal64 = decimal64Message
+		return field
+	case pbast.Empty:
+		t.emptyNeeded = true
+		return field
 	}
 
-	return field, typ
+	if err := scope.addType(typ); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	return field
+}
+
+func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast.Type {
+	if pbtype := builtinMap[ytype.Kind]; pbtype != nil {
+		return pbtype
+	}
+
+	switch ytype.Kind {
+	case yang.Ydecimal64:
+		return decimal64Message
+	case yang.Yempty:
+		return pbast.Empty
+	case yang.Ybits:
+		return t.customBits(typeName, ytype.Bit)
+	case yang.Yenum:
+		return t.customEnum(typeName, ytype.Enum)
+	case yang.Yunion:
+		return t.customUnion(typeName, ytype.Type)
+	case yang.Yleafref, yang.Yidentityref, yang.YinstanceIdentifier:
+		return nil
+	default:
+		return nil
+	}
 }
 
 // e must be a leaf entry
@@ -361,7 +364,41 @@ func (t *transformer) customEnum(name string, e *yang.EnumType) *pbast.Enum {
 	return enum
 }
 
-func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.MessageField, *pbast.Message) {
+func (t *transformer) customUnion(name string, types []*yang.YangType) *pbast.Message {
+	scope := newScope()
+	pbTypes := t.unionFields(types, nil, scope)
+
+	oneof := pbast.NewOneOf("value")
+	for i, typ := range pbTypes {
+		oneof.AddField(pbast.NewOneOfField(typ, underscoreCase(typ.TypeName()), i+1))
+	}
+
+	msg := pbast.NewMessage(name).AddOneOf(oneof)
+	scope.reflectTo(msg)
+
+	return msg
+}
+
+func (t *transformer) unionFields(types []*yang.YangType, pbTypes []pbast.Type, scope *scope) []pbast.Type {
+	for _, typ := range types {
+		pbtype := t.translateType(typ, typ.Name)
+		if pbtype == nil {
+			continue
+		}
+
+		if typ.Kind == yang.Yunion {
+			pbTypes = t.unionFields(typ.Type, pbTypes, scope)
+			continue
+		}
+
+		pbTypes = append(pbTypes, pbtype)
+		scope.addType(pbtype)
+	}
+
+	return pbTypes
+}
+
+func (t *transformer) directory(scope *scope, e entry, index int, repeated bool) *pbast.MessageField {
 	fieldName := underscoreCase(e.Name)
 	typeName := CamelCase(e.Name)
 
@@ -374,5 +411,9 @@ func (t *transformer) directory(e entry, index int, repeated bool) (*pbast.Messa
 		Comment:  t.genericComments(e),
 	}
 
-	return field, inner
+	if err := scope.addType(inner); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	return field
 }
