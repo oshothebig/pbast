@@ -8,3 +8,6 @@ var decimal64Message = pbast.NewMessage("Decimal64").
 
 var leafRef = pbast.NewMessage("LeafRef").
 	AddField(pbast.NewMessageField(pbast.String, "path", 1))
+
+var identityRef = pbast.NewMessage("IdentityRef").
+	AddField(pbast.NewMessageField(pbast.String, "value", 1))

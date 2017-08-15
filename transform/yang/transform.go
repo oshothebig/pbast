@@ -48,6 +48,7 @@ type transformer struct {
 	topScope    *scope
 	decimal64   *pbast.Message
 	leafRef     *pbast.Message
+	identityRef *pbast.Message
 	emptyNeeded bool
 }
 
@@ -74,6 +75,7 @@ func (t *transformer) reflectTo(f *pbast.File) {
 	t.topScope.reflectTo(f)
 	f.AddMessage(t.decimal64)
 	f.AddMessage(t.leafRef)
+	f.AddMessage(t.identityRef)
 	if t.emptyNeeded {
 		f.AddImport(pbast.NewImport("google/protobuf/empty.proto"))
 	}
@@ -302,6 +304,9 @@ func (t *transformer) leaf(scope *scope, e entry, index int, repeated bool) *pba
 	case leafRef:
 		t.leafRef = leafRef
 		return field
+	case identityRef:
+		t.identityRef = identityRef
+		return field
 	case pbast.Empty:
 		t.emptyNeeded = true
 		return field
@@ -324,6 +329,8 @@ func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast
 		return decimal64Message
 	case yang.Yleafref:
 		return leafRef
+	case yang.Yidentityref:
+		return identityRef
 	case yang.Yempty:
 		return pbast.Empty
 	case yang.Ybits:
@@ -332,7 +339,7 @@ func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast
 		return t.customEnum(typeName, ytype.Enum)
 	case yang.Yunion:
 		return t.customUnion(typeName, ytype.Type)
-	case yang.Yidentityref, yang.YinstanceIdentifier:
+	case yang.YinstanceIdentifier:
 		return nil
 	default:
 		return nil
