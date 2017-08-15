@@ -11,3 +11,6 @@ var leafRef = pbast.NewMessage("LeafRef").
 
 var identityRef = pbast.NewMessage("IdentityRef").
 	AddField(pbast.NewMessageField(pbast.String, "value", 1))
+
+var instanceIdentifier = pbast.NewMessage("InstanceIdentifier").
+	AddField(pbast.NewMessageField(pbast.String, "path", 1))

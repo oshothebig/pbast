@@ -45,11 +45,12 @@ var builtinTypes = stringSet{
 }
 
 type transformer struct {
-	topScope    *scope
-	decimal64   *pbast.Message
-	leafRef     *pbast.Message
-	identityRef *pbast.Message
-	emptyNeeded bool
+	topScope           *scope
+	decimal64          *pbast.Message
+	leafRef            *pbast.Message
+	identityRef        *pbast.Message
+	instanceIdentifier *pbast.Message
+	emptyNeeded        bool
 }
 
 // e must be YANG module
@@ -76,6 +77,7 @@ func (t *transformer) reflectTo(f *pbast.File) {
 	f.AddMessage(t.decimal64)
 	f.AddMessage(t.leafRef)
 	f.AddMessage(t.identityRef)
+	f.AddMessage(t.instanceIdentifier)
 	if t.emptyNeeded {
 		f.AddImport(pbast.NewImport("google/protobuf/empty.proto"))
 	}
@@ -307,6 +309,9 @@ func (t *transformer) leaf(scope *scope, e entry, index int, repeated bool) *pba
 	case identityRef:
 		t.identityRef = identityRef
 		return field
+	case instanceIdentifier:
+		t.instanceIdentifier = instanceIdentifier
+		return field
 	case pbast.Empty:
 		t.emptyNeeded = true
 		return field
@@ -331,6 +336,8 @@ func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast
 		return leafRef
 	case yang.Yidentityref:
 		return identityRef
+	case yang.YinstanceIdentifier:
+		return instanceIdentifier
 	case yang.Yempty:
 		return pbast.Empty
 	case yang.Ybits:
@@ -339,8 +346,6 @@ func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast
 		return t.customEnum(typeName, ytype.Enum)
 	case yang.Yunion:
 		return t.customUnion(typeName, ytype.Type)
-	case yang.YinstanceIdentifier:
-		return nil
 	default:
 		return nil
 	}
