@@ -300,8 +300,8 @@ func (t *transformer) leaf(scope *scope, e entry, index int, repeated bool) *pba
 		Comment:  t.genericComments(e),
 	}
 	switch typ {
-	case decimal64Message:
-		t.decimal64 = decimal64Message
+	case decimal64:
+		t.decimal64 = decimal64
 		return field
 	case leafRef:
 		t.leafRef = leafRef
@@ -331,7 +331,7 @@ func (t *transformer) translateType(ytype *yang.YangType, typeName string) pbast
 
 	switch ytype.Kind {
 	case yang.Ydecimal64:
-		return decimal64Message
+		return decimal64
 	case yang.Yleafref:
 		return leafRef
 	case yang.Yidentityref:
