@@ -375,9 +375,9 @@ func (t *transformer) customBits(name string, bits *yang.EnumType) *pbast.Messag
 
 func (t *transformer) customEnum(name string, e *yang.EnumType) *pbast.Enum {
 	enum := pbast.NewEnum(name)
-	for i, n := range e.Names() {
-		v := int(e.Values()[i])
-		enum.AddField(pbast.NewEnumField(constantName(n), v))
+	for _, v := range e.Values() {
+		n := e.ValueMap()[v]
+		enum.AddField(pbast.NewEnumField(constantName(n), int(v)))
 	}
 
 	return enum
