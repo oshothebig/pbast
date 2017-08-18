@@ -373,14 +373,17 @@ func customBits(name string, bits *yang.EnumType) *pbast.Message {
 	return msg
 }
 
-func customEnum(name string, e *yang.EnumType) *pbast.Enum {
-	enum := pbast.NewEnum(name)
+func customEnum(name string, e *yang.EnumType) *pbast.Message {
+	enum := pbast.NewEnum("Value")
 	for _, v := range e.Values() {
 		n := e.ValueMap()[v]
 		enum.AddField(pbast.NewEnumField(constantName(n), int(v)))
 	}
+	msg := pbast.NewMessage(name).
+		AddEnum(enum).
+		AddField(pbast.NewMessageField(enum, "value", 1))
 
-	return enum
+	return msg
 }
 
 func customUnion(name string, types []*yang.YangType) *pbast.Message {
