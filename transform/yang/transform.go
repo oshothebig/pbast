@@ -265,12 +265,35 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		fieldNum := index + 1
 		var field *pbast.MessageField
 		switch {
-		// leaf-list case
-		case child.Type != nil && child.ListAttr != nil:
-			field = t.leaf(scope, child, fieldNum, true)
-		// leaf case
 		case child.Type != nil:
-			field = t.leaf(scope, child, fieldNum, false)
+			typ := t.leaf(scope, child.Type, child.Name)
+
+			switch typ {
+			case nil:
+				continue
+			case decimal64:
+				t.decimal64 = decimal64
+			case leafRef:
+				t.leafRef = leafRef
+			case identityRef:
+				t.identityRef = identityRef
+			case instanceIdentifier:
+				t.instanceIdentifier = instanceIdentifier
+			case pbast.Empty:
+				t.emptyNeeded = true
+			default:
+				if err := scope.addType(typ); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
+			}
+
+			field = &pbast.MessageField{
+				Repeated: child.ListAttr != nil,
+				Type:     typ.TypeName(),
+				Name:     underscoreCase(child.Name),
+				Index:    fieldNum,
+				Comment:  t.genericComments(child),
+			}
 		// list case
 		case child.ListAttr != nil:
 			field = t.directory(scope, child, fieldNum, true)
@@ -286,81 +309,77 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	return msg
 }
 
-func (t *transformer) leaf(scope *scope, e entry, index int, repeated bool) *pbast.MessageField {
-	typ := translateType(e.Type, t.typeName(e))
-	if typ == nil {
-		return nil
+func (t *transformer) leaf(scope *scope, typ *yang.YangType, name string) pbast.Type {
+	if isBuiltinType(typ) {
+		return convertType(typ, CamelCase(name))
 	}
-
-	field := &pbast.MessageField{
-		Repeated: repeated,
-		Type:     typ.TypeName(),
-		Name:     underscoreCase(e.Name),
-		Index:    index,
-		Comment:  t.genericComments(e),
+	switch typ.Kind {
+	case yang.Yenum, yang.Ybits, yang.Yunion:
+		return convertType(typ, CamelCase(typ.Name))
+	default:
+		inner := convertType(typ, "Value")
+		msg := pbast.NewMessage(CamelCase(typ.Name)).
+			AddField(pbast.NewMessageField(inner, "value", 1))
+		switch inner {
+		case decimal64:
+			t.decimal64 = decimal64
+		case leafRef:
+			t.leafRef = leafRef
+		case identityRef:
+			t.identityRef = identityRef
+		case instanceIdentifier:
+			t.instanceIdentifier = instanceIdentifier
+		case pbast.Empty:
+			t.emptyNeeded = true
+		default:
+			msg.AddType(inner)
+		}
+		return msg
 	}
-	switch typ {
-	case decimal64:
-		t.decimal64 = decimal64
-		return field
-	case leafRef:
-		t.leafRef = leafRef
-		return field
-	case identityRef:
-		t.identityRef = identityRef
-		return field
-	case instanceIdentifier:
-		t.instanceIdentifier = instanceIdentifier
-		return field
-	case pbast.Empty:
-		t.emptyNeeded = true
-		return field
-	}
-
-	if err := scope.addType(typ); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-
-	return field
 }
 
-func translateType(ytype *yang.YangType, typeName string) pbast.Type {
-	if pbtype := builtinMap[ytype.Kind]; pbtype != nil {
-		return pbtype
+func isBuiltinType(typ *yang.YangType) bool {
+	if _, ok := yang.TypeKindFromName[typ.Name]; !ok {
+		return false
 	}
+	return true
+}
 
-	switch ytype.Kind {
-	case yang.Ydecimal64:
-		return decimal64
+func convertType(typ *yang.YangType, name string) pbast.Type {
+	switch typ.Kind {
+	case yang.Yint8, yang.Yint16, yang.Yint32:
+		return pbast.Int32
+	case yang.Yint64:
+		return pbast.Int64
+	case yang.Yuint8, yang.Yuint16, yang.Yuint32:
+		return pbast.UInt32
+	case yang.Yuint64:
+		return pbast.UInt64
+	case yang.Ystring:
+		return pbast.String
+	case yang.Ybool:
+		return pbast.Bool
+	case yang.Yenum:
+		return customEnum(name, typ.Enum)
+	case yang.Ybits:
+		return customBits(name, typ.Bit)
+	case yang.Ybinary:
+		return pbast.Bytes
 	case yang.Yleafref:
 		return leafRef
 	case yang.Yidentityref:
 		return identityRef
-	case yang.YinstanceIdentifier:
-		return instanceIdentifier
 	case yang.Yempty:
 		return pbast.Empty
-	case yang.Ybits:
-		return customBits(typeName, ytype.Bit)
-	case yang.Yenum:
-		return customEnum(typeName, ytype.Enum)
 	case yang.Yunion:
-		return customUnion(typeName, ytype.Type)
+		return customUnion(name, typ.Type)
+	case yang.YinstanceIdentifier:
+		return instanceIdentifier
+	case yang.Ydecimal64:
+		return decimal64
 	default:
 		return nil
 	}
-}
-
-// e must be a leaf entry
-func (t *transformer) typeName(e entry) string {
-	// if the type name matches one of builtin type names,
-	// it means typedef is not used
-	if builtinTypes.contains(e.Type.Name) {
-		return CamelCase(e.Name)
-	}
-
-	// if typedef is used, use the type name instead of the leaf node name
-	return CamelCase(e.Type.Name)
 }
 
 func customBits(name string, bits *yang.EnumType) *pbast.Message {
@@ -403,7 +422,7 @@ func customUnion(name string, types []*yang.YangType) *pbast.Message {
 
 func unionFields(types []*yang.YangType, pbTypes []pbast.Type, scope *scope) []pbast.Type {
 	for _, typ := range types {
-		pbtype := translateType(typ, typ.Name)
+		pbtype := convertType(typ, typ.Name)
 		if pbtype == nil {
 			continue
 		}
