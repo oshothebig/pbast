@@ -417,13 +417,13 @@ func (t *transformer) customUnion(name string, types []*yang.YangType) *pbast.Me
 
 func (t *transformer) unionFields(types []*yang.YangType, pbTypes []pbast.Type, scope *scope) []pbast.Type {
 	for _, typ := range types {
-		pbtype := t.convertType(typ, typ.Name)
-		if pbtype == nil {
+		if typ.Kind == yang.Yunion {
+			pbTypes = t.unionFields(typ.Type, pbTypes, scope)
 			continue
 		}
 
-		if typ.Kind == yang.Yunion {
-			pbTypes = t.unionFields(typ.Type, pbTypes, scope)
+		pbtype := t.leaf(scope, typ, typ.Name)
+		if pbtype == nil {
 			continue
 		}
 
