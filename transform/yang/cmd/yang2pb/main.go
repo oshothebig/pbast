@@ -84,6 +84,7 @@ func (t *translator) execute() error {
 	protobuf := yang.Transform(entry)
 	if t.config.rewrite {
 		protobuf = yang.CompleteZeroInEnum(protobuf)
+		protobuf = yang.AppendPrefixForEnumValueStartingWithNumber(protobuf)
 	}
 	printer.Fprint(t.out, protobuf)
 
