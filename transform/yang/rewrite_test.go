@@ -111,7 +111,7 @@ func TestCompleteZeroInEnum(t *testing.T) {
 					AddField(pbast.NewEnumField("V1", 1))),
 			pbast.NewFile("org.example").
 				AddEnum(pbast.NewEnum("E1").
-					AddField(pbast.NewEnumField("E1_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V1", 1))),
 		},
 		{
@@ -134,10 +134,10 @@ func TestCompleteZeroInEnum(t *testing.T) {
 					AddField(pbast.NewEnumField("V2", 1))),
 			pbast.NewFile("org.example").
 				AddEnum(pbast.NewEnum("E1").
-					AddField(pbast.NewEnumField("E1_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V1", 1))).
 				AddEnum(pbast.NewEnum("E2").
-					AddField(pbast.NewEnumField("E2_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V2", 1))),
 		},
 		{
@@ -150,7 +150,7 @@ func TestCompleteZeroInEnum(t *testing.T) {
 				AddEnum(pbast.NewEnum("E1").
 					AddField(pbast.NewEnumField("V1", 0))).
 				AddEnum(pbast.NewEnum("E2").
-					AddField(pbast.NewEnumField("E2_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V2", 1))),
 		},
 		{
@@ -166,7 +166,7 @@ func TestCompleteZeroInEnum(t *testing.T) {
 				AddEnum(pbast.NewEnum("E1").
 					AddField(pbast.NewEnumField("V1", 0))).
 				AddEnum(pbast.NewEnum("E2").
-					AddField(pbast.NewEnumField("E2_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V2", 1))).
 				AddMessage(pbast.NewMessage("M1").
 					AddEnum(pbast.NewEnum("E1").
@@ -185,11 +185,11 @@ func TestCompleteZeroInEnum(t *testing.T) {
 				AddEnum(pbast.NewEnum("E1").
 					AddField(pbast.NewEnumField("V1", 0))).
 				AddEnum(pbast.NewEnum("E2").
-					AddField(pbast.NewEnumField("E2_DEFAULT", 0)).
+					AddField(pbast.NewEnumField("DEFAULT", 0)).
 					AddField(pbast.NewEnumField("V2", 1))).
 				AddMessage(pbast.NewMessage("M1").
 					AddEnum(pbast.NewEnum("E1").
-						AddField(pbast.NewEnumField("E1_DEFAULT", 0)).
+						AddField(pbast.NewEnumField("DEFAULT", 0)).
 						AddField(pbast.NewEnumField("V1", 1)))),
 		},
 	}

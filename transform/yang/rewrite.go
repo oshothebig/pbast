@@ -111,7 +111,6 @@ func completeZeroInMessage(m *pbast.Message) *pbast.Message {
 }
 
 func completeZeroIfAbsent(e *pbast.Enum) *pbast.Enum {
-	const suffix = "_DEFAULT"
 	for _, v := range e.Fields {
 		// there is 0, no need to complete
 		if v.Index == 0 {
@@ -119,7 +118,7 @@ func completeZeroIfAbsent(e *pbast.Enum) *pbast.Enum {
 		}
 	}
 
-	field := pbast.NewEnumField(strings.ToUpper(e.Name)+suffix, 0)
+	field := pbast.NewEnumField("DEFAULT", 0)
 	newEnum := *e
 	newEnum.Fields = append([]*pbast.EnumField{field}, newEnum.Fields...)
 	return &newEnum

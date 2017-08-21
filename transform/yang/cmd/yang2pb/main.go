@@ -82,6 +82,9 @@ func (t *translator) execute() error {
 	}
 
 	protobuf := yang.Transform(entry)
+	if t.config.rewrite {
+		protobuf = yang.CompleteZeroInEnum(protobuf)
+	}
 	printer.Fprint(t.out, protobuf)
 
 	return nil
