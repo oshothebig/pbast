@@ -298,13 +298,13 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 
 func (t *transformer) leaf(scope *scope, typ *yang.YangType, name string) pbast.Type {
 	if isBuiltinType(typ) {
-		return convertType(typ, CamelCase(name))
+		return t.convertType(typ, CamelCase(name))
 	}
 	switch typ.Kind {
 	case yang.Yenum, yang.Ybits, yang.Yunion:
-		return convertType(typ, CamelCase(typ.Name))
+		return t.convertType(typ, CamelCase(typ.Name))
 	default:
-		inner := convertType(typ, "Value")
+		inner := t.convertType(typ, "Value")
 		msg := pbast.NewMessage(CamelCase(typ.Name)).
 			AddField(pbast.NewMessageField(inner, "value", 1))
 		if !t.useType(inner) {
@@ -340,7 +340,7 @@ func isBuiltinType(typ *yang.YangType) bool {
 	return true
 }
 
-func convertType(typ *yang.YangType, name string) pbast.Type {
+func (t *transformer) convertType(typ *yang.YangType, name string) pbast.Type {
 	switch typ.Kind {
 	case yang.Yint8, yang.Yint16, yang.Yint32:
 		return pbast.Int32
@@ -355,9 +355,9 @@ func convertType(typ *yang.YangType, name string) pbast.Type {
 	case yang.Ybool:
 		return pbast.Bool
 	case yang.Yenum:
-		return customEnum(name, typ.Enum)
+		return t.customEnum(name, typ.Enum)
 	case yang.Ybits:
-		return customBits(name, typ.Bit)
+		return t.customBits(name, typ.Bit)
 	case yang.Ybinary:
 		return pbast.Bytes
 	case yang.Yleafref:
@@ -367,7 +367,7 @@ func convertType(typ *yang.YangType, name string) pbast.Type {
 	case yang.Yempty:
 		return pbast.Empty
 	case yang.Yunion:
-		return customUnion(name, typ.Type)
+		return t.customUnion(name, typ.Type)
 	case yang.YinstanceIdentifier:
 		return instanceIdentifier
 	case yang.Ydecimal64:
@@ -377,7 +377,7 @@ func convertType(typ *yang.YangType, name string) pbast.Type {
 	}
 }
 
-func customBits(name string, bits *yang.EnumType) *pbast.Message {
+func (t *transformer) customBits(name string, bits *yang.EnumType) *pbast.Message {
 	msg := pbast.NewMessage(name)
 	for i, n := range bits.Names() {
 		v := 1 << uint(bits.Values()[i])
@@ -387,7 +387,7 @@ func customBits(name string, bits *yang.EnumType) *pbast.Message {
 	return msg
 }
 
-func customEnum(name string, e *yang.EnumType) *pbast.Message {
+func (t *transformer) customEnum(name string, e *yang.EnumType) *pbast.Message {
 	enum := pbast.NewEnum("Value")
 	for _, v := range e.Values() {
 		n := e.ValueMap()[v]
@@ -400,9 +400,9 @@ func customEnum(name string, e *yang.EnumType) *pbast.Message {
 	return msg
 }
 
-func customUnion(name string, types []*yang.YangType) *pbast.Message {
+func (t *transformer) customUnion(name string, types []*yang.YangType) *pbast.Message {
 	scope := newScope()
-	pbTypes := unionFields(types, nil, scope)
+	pbTypes := t.unionFields(types, nil, scope)
 
 	oneof := pbast.NewOneOf("value")
 	for i, typ := range pbTypes {
@@ -415,15 +415,15 @@ func customUnion(name string, types []*yang.YangType) *pbast.Message {
 	return msg
 }
 
-func unionFields(types []*yang.YangType, pbTypes []pbast.Type, scope *scope) []pbast.Type {
+func (t *transformer) unionFields(types []*yang.YangType, pbTypes []pbast.Type, scope *scope) []pbast.Type {
 	for _, typ := range types {
-		pbtype := convertType(typ, typ.Name)
+		pbtype := t.convertType(typ, typ.Name)
 		if pbtype == nil {
 			continue
 		}
 
 		if typ.Kind == yang.Yunion {
-			pbTypes = unionFields(typ.Type, pbTypes, scope)
+			pbTypes = t.unionFields(typ.Type, pbTypes, scope)
 			continue
 		}
 
