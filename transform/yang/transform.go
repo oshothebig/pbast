@@ -268,20 +268,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		case child.Type != nil:
 			typ := t.leaf(scope, child.Type, child.Name)
 
-			switch typ {
-			case nil:
-				continue
-			case decimal64:
-				t.decimal64 = decimal64
-			case leafRef:
-				t.leafRef = leafRef
-			case identityRef:
-				t.identityRef = identityRef
-			case instanceIdentifier:
-				t.instanceIdentifier = instanceIdentifier
-			case pbast.Empty:
-				t.emptyNeeded = true
-			default:
+			if !t.useType(typ) {
 				if err := scope.addType(typ); err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
@@ -320,22 +307,30 @@ func (t *transformer) leaf(scope *scope, typ *yang.YangType, name string) pbast.
 		inner := convertType(typ, "Value")
 		msg := pbast.NewMessage(CamelCase(typ.Name)).
 			AddField(pbast.NewMessageField(inner, "value", 1))
-		switch inner {
-		case decimal64:
-			t.decimal64 = decimal64
-		case leafRef:
-			t.leafRef = leafRef
-		case identityRef:
-			t.identityRef = identityRef
-		case instanceIdentifier:
-			t.instanceIdentifier = instanceIdentifier
-		case pbast.Empty:
-			t.emptyNeeded = true
-		default:
+		if !t.useType(inner) {
 			msg.AddType(inner)
 		}
 		return msg
 	}
+}
+
+func (t *transformer) useType(typ pbast.Type) bool {
+	switch typ {
+	case decimal64:
+		t.decimal64 = decimal64
+	case leafRef:
+		t.leafRef = leafRef
+	case identityRef:
+		t.identityRef = identityRef
+	case instanceIdentifier:
+		t.instanceIdentifier = instanceIdentifier
+	case pbast.Empty:
+		t.emptyNeeded = true
+	default:
+		return false
+	}
+
+	return true
 }
 
 func isBuiltinType(typ *yang.YangType) bool {
