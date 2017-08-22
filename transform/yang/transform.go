@@ -258,9 +258,11 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		return nil
 	}
 
-	msg := pbast.NewMessage(name)
+	msg := &pbast.Message{
+		Name:    name,
+		Comment: t.genericComments(e),
+	}
 	scope := newScope()
-	msg.Comment = t.genericComments(e)
 	for index, child := range e.children() {
 		fieldNum := index + 1
 		var field *pbast.MessageField
