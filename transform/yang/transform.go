@@ -266,7 +266,10 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		case child.Type != nil:
 			typ := t.leaf(scope, child.Type, child.Name)
 
-			if !t.useType(typ) {
+			switch typ {
+			case decimal64, leafRef, identityRef, instanceIdentifier, pbast.Empty:
+				t.topScope.addType(typ)
+			default:
 				if err := scope.addType(typ); err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
@@ -305,20 +308,13 @@ func (t *transformer) leaf(scope *scope, typ *yang.YangType, name string) pbast.
 		inner := t.convertType(typ, "Value")
 		msg := pbast.NewMessage(CamelCase(typ.Name)).
 			AddField(pbast.NewMessageField(inner, "value", 1))
-		if !t.useType(inner) {
+		switch inner {
+		case decimal64, leafRef, identityRef, instanceIdentifier, pbast.Empty:
+			t.topScope.addType(inner)
+		default:
 			msg.AddType(inner)
 		}
 		return msg
-	}
-}
-
-func (t *transformer) useType(typ pbast.Type) bool {
-	switch typ {
-	case decimal64, leafRef, identityRef, instanceIdentifier, pbast.Empty:
-		t.topScope.addType(typ)
-		return true
-	default:
-		return false
 	}
 }
 
