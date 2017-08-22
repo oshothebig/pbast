@@ -262,8 +262,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	for index, child := range e.children() {
 		fieldNum := index + 1
 		var field *pbast.MessageField
-		switch {
-		case child.Type != nil:
+		if child.Type != nil {
 			typ := t.leaf(scope, child.Type, child.Name)
 
 			switch typ {
@@ -282,12 +281,8 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 				Index:    fieldNum,
 				Comment:  t.genericComments(child),
 			}
-		// list case
-		case child.ListAttr != nil:
-			field = t.directory(scope, child, fieldNum, true)
-		// others might be container case
-		default:
-			field = t.directory(scope, child, fieldNum, false)
+		} else {
+			field = t.directory(scope, child, fieldNum, child.ListAttr != nil)
 		}
 		msg.AddField(field)
 	}
