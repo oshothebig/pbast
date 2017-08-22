@@ -73,14 +73,10 @@ func (t *transformer) declare(m *pbast.Message) {
 }
 
 func (t *transformer) reflectTo(f *pbast.File) {
-	t.topScope.reflectTo(f)
-	f.AddMessage(t.decimal64)
-	f.AddMessage(t.leafRef)
-	f.AddMessage(t.identityRef)
-	f.AddMessage(t.instanceIdentifier)
-	if t.emptyNeeded {
+	if typ := t.topScope.types[pbast.Empty.TypeName()]; typ != nil {
 		f.AddImport(pbast.NewImport("google/protobuf/empty.proto"))
 	}
+	t.topScope.reflectTo(f)
 }
 
 func (t *transformer) module(e entry) *pbast.File {
@@ -318,21 +314,12 @@ func (t *transformer) leaf(scope *scope, typ *yang.YangType, name string) pbast.
 
 func (t *transformer) useType(typ pbast.Type) bool {
 	switch typ {
-	case decimal64:
-		t.decimal64 = decimal64
-	case leafRef:
-		t.leafRef = leafRef
-	case identityRef:
-		t.identityRef = identityRef
-	case instanceIdentifier:
-		t.instanceIdentifier = instanceIdentifier
-	case pbast.Empty:
-		t.emptyNeeded = true
+	case decimal64, leafRef, identityRef, instanceIdentifier, pbast.Empty:
+		t.topScope.addType(typ)
+		return true
 	default:
 		return false
 	}
-
-	return true
 }
 
 func isBuiltinType(typ *yang.YangType) bool {
