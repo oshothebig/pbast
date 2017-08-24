@@ -263,7 +263,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 		fieldNum := index + 1
 		var field *pbast.MessageField
 		if child.Type != nil {
-			typ := t.leaf(child.Type, child.Name)
+			typ := t.leaf(child.Type, messageName(child))
 
 			if needsInTopScope(typ) {
 				t.topScope.addType(typ)
@@ -292,19 +292,15 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 }
 
 func (t *transformer) leaf(typ *yang.YangType, name string) pbast.Type {
-	if !isBuiltinType(typ) {
-		name = typ.Name
-	}
-
-	if needsCustomType(typ) {
+	if needsCustomType(typ.Kind) {
 		return t.customType(typ, CamelCase(name))
 	}
 
-	if isBuiltinType(typ) {
-		return t.mapBuiltinType(typ)
+	if isBuiltinType(typ.Name) {
+		return t.mapBuiltinType(typ.Kind)
 	}
 
-	inner := t.mapBuiltinType(typ)
+	inner := t.mapBuiltinType(typ.Kind)
 	msg := pbast.NewMessage(CamelCase(name)).
 		AddField(pbast.NewMessageField(inner, "value", 1))
 	if needsInTopScope(inner) {
@@ -313,6 +309,14 @@ func (t *transformer) leaf(typ *yang.YangType, name string) pbast.Type {
 		msg.AddType(inner)
 	}
 	return msg
+}
+
+func messageName(e entry) string {
+	if isBuiltinType(e.Type.Name) {
+		return e.Name
+	}
+
+	return e.Type.Name
 }
 
 func needsInTopScope(t pbast.Type) bool {
@@ -337,15 +341,15 @@ func (t *transformer) customType(typ *yang.YangType, name string) pbast.Type {
 	}
 }
 
-func isBuiltinType(typ *yang.YangType) bool {
-	if _, ok := yang.TypeKindFromName[typ.Name]; !ok {
+func isBuiltinType(name string) bool {
+	if _, ok := yang.TypeKindFromName[name]; !ok {
 		return false
 	}
 	return true
 }
 
-func needsCustomType(t *yang.YangType) bool {
-	switch t.Kind {
+func needsCustomType(kind yang.TypeKind) bool {
+	switch kind {
 	case yang.Yenum, yang.Ybits, yang.Yunion:
 		return true
 	default:
@@ -353,8 +357,8 @@ func needsCustomType(t *yang.YangType) bool {
 	}
 }
 
-func (t *transformer) mapBuiltinType(typ *yang.YangType) pbast.Type {
-	switch typ.Kind {
+func (t *transformer) mapBuiltinType(kind yang.TypeKind) pbast.Type {
+	switch kind {
 	case yang.Yint8, yang.Yint16, yang.Yint32:
 		return pbast.Int32
 	case yang.Yint64:
