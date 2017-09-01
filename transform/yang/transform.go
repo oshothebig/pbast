@@ -201,18 +201,28 @@ func (t *transformer) rpcs(e entry) *pbast.Service {
 
 func (t *transformer) rpc(e entry) *pbast.RPC {
 	method := CamelCase(e.Name)
-	in := method + "Request"
-	out := method + "Response"
+	var in pbast.Type
+	if e.RPC.Input == nil {
+		in = pbast.Empty
+	} else {
+		in = t.buildMessage(method+"Request", entry{e.RPC.Input})
+	}
+	t.declare(in)
+
+	var out pbast.Type
+	if e.RPC.Output == nil {
+		out = pbast.Empty
+	} else {
+		out = t.buildMessage(method+"Response", entry{e.RPC.Output})
+	}
+	t.declare(out)
 
 	rpc := pbast.NewRPC(
 		method,
-		pbast.NewReturnType(in),
-		pbast.NewReturnType(out),
+		pbast.NewReturnType(in.TypeName()),
+		pbast.NewReturnType(out.TypeName()),
 	)
 	rpc.Comment = t.genericComments(e)
-
-	t.declare(t.buildMessage(in, entry{e.RPC.Input}))
-	t.declare(t.buildMessage(out, entry{e.RPC.Output}))
 
 	return rpc
 }
@@ -236,17 +246,12 @@ func (t *transformer) notifications(e entry) *pbast.Service {
 func (t *transformer) notification(e entry) *pbast.RPC {
 	const common = "Notification"
 	method := CamelCase(e.Name)
-	in := buildName(method, common, "Request")
-	out := buildName(method, common, "Response")
+	in := pbast.Empty
+	t.declare(in)
+	out := t.buildMessage(buildName(method, common, "Response"), e)
+	t.declare(out)
 
-	rpc := pbast.NewRPC(method, pbast.NewReturnType(in), pbast.NewReturnType(out))
-
-	// notification statement doesn't have an input parameter equivalent,
-	// then empty message is used for input as RPC
-	t.declare(pbast.NewMessage(in))
-	t.declare(t.buildMessage(out, e))
-
-	return rpc
+	return pbast.NewRPC(method, pbast.NewReturnType(in.TypeName()), pbast.NewReturnType(out.TypeName()))
 }
 
 func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
