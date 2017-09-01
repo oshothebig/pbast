@@ -66,7 +66,7 @@ func Transform(e *yang.Entry) *pbast.File {
 	return t.module(entry{e})
 }
 
-func (t *transformer) declare(m *pbast.Message) {
+func (t *transformer) declare(m pbast.Type) {
 	if err := t.topScope.addType(m); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -266,7 +266,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 			typ := t.leaf(child.Type, messageName(child))
 
 			if needsInTopScope(typ) {
-				t.topScope.addType(typ)
+				t.declare(typ)
 			} else {
 				if err := scope.addType(typ); err != nil {
 					fmt.Fprintln(os.Stderr, err)
@@ -304,7 +304,7 @@ func (t *transformer) leaf(typ *yang.YangType, name string) pbast.Type {
 	msg := pbast.NewMessage(CamelCase(name)).
 		AddField(pbast.NewMessageField(inner, "value", 1))
 	if needsInTopScope(inner) {
-		t.topScope.addType(inner)
+		t.declare(inner)
 	} else {
 		msg.AddType(inner)
 	}
