@@ -8,6 +8,7 @@ import (
 	"os"
 
 	goyang "github.com/openconfig/goyang/pkg/yang"
+	"github.com/oshothebig/pbast"
 	"github.com/oshothebig/pbast/printer"
 	"github.com/oshothebig/pbast/transform/yang"
 )
@@ -82,11 +83,17 @@ func (t *translator) execute() error {
 	}
 
 	protobuf := yang.Transform(entry)
-	if t.config.rewrite {
-		protobuf = yang.CompleteZeroInEnum(protobuf)
-		protobuf = yang.AppendPrefixForEnumValueStartingWithNumber(protobuf)
-	}
+	protobuf = t.rewrite(protobuf)
 	printer.Fprint(t.out, protobuf)
 
 	return nil
+}
+
+func (t *translator) rewrite(f *pbast.File) *pbast.File {
+	if t.config.rewrite {
+		f = yang.CompleteZeroInEnum(f)
+		f = yang.AppendPrefixForEnumValueStartingWithNumber(f)
+	}
+
+	return f
 }
