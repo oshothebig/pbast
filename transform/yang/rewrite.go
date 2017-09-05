@@ -6,6 +6,48 @@ import (
 	"github.com/oshothebig/pbast"
 )
 
+func LiftMessage(f *pbast.File) *pbast.File {
+	count := countName(f)
+	for _, m := range f.Messages {
+		liftMessage(m, f, count)
+	}
+	return f
+}
+
+func liftMessage(msg *pbast.Message, f *pbast.File, count map[string]int) {
+	if len(msg.Messages) == 0 {
+		return
+	}
+
+	var children []*pbast.Message
+	for _, child := range msg.Messages {
+		if count[child.Name] == 1 {
+			liftMessage(child, f, count)
+			f.AddMessage(child)
+		} else {
+			children = append(children, child)
+		}
+	}
+	msg.Messages = children
+}
+
+func countName(f *pbast.File) map[string]int {
+	count := map[string]int{}
+	countMessage(f.Messages, count)
+	return count
+}
+
+func countMessage(msgs []*pbast.Message, count map[string]int) {
+	if len(msgs) == 0 {
+		return
+	}
+
+	head, tail := msgs[0], msgs[1:]
+	count[head.Name]++
+	countMessage(head.Messages, count)
+	countMessage(tail, count)
+}
+
 func CompleteZeroInEnum(f *pbast.File) *pbast.File {
 	if len(f.Messages) == 0 && len(f.Enums) == 0 {
 		return f
