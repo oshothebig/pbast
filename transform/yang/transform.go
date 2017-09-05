@@ -190,7 +190,7 @@ func (t *transformer) rpcs(e entry) *pbast.Service {
 		return nil
 	}
 
-	s := pbast.NewService(CamelCase(e.Name))
+	s := pbast.NewService(CamelCase(e.Name) + "Service")
 	for _, rpc := range rpcs {
 		r := t.rpc(rpc)
 		s.AddRPC(r)
