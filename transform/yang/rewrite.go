@@ -7,48 +7,23 @@ import (
 )
 
 func LiftMessage(f *pbast.File) *pbast.File {
-	count := countName(f)
-	for _, m := range f.Messages {
-		liftMessage(m, f, count)
-	}
-	return f
-}
-
-func liftMessage(msg *pbast.Message, f *pbast.File, count map[string][]*pbast.Message) {
-	if len(msg.Messages) == 0 {
-		return
-	}
-
-	var children []*pbast.Message
-	for _, child := range msg.Messages {
-		liftMessage(child, f, count)
-		if len(count[child.Name]) == 1 {
-			f.AddMessage(child)
-		} else {
-			children = append(children, child)
-		}
-	}
-	msg.Messages = children
-}
-
-func RemoveDuplication(f *pbast.File) *pbast.File {
-	types := countName(f)
-	targets := extractIdenticalMessage(types)
+	types := aggregateMessages(f)
+	targets := extractIdenticalMessages(types)
 	traversed := map[string]bool{}
 	for _, m := range f.Messages {
-		removeDuplication(m, f, targets, traversed)
+		liftMessage(m, f, targets, traversed)
 	}
 	return f
 }
 
-func removeDuplication(msg *pbast.Message, f *pbast.File, targets stringSet, traversed map[string]bool) {
+func liftMessage(msg *pbast.Message, f *pbast.File, targets stringSet, traversed map[string]bool) {
 	if len(msg.Messages) == 0 {
 		return
 	}
 
 	var children []*pbast.Message
 	for _, child := range msg.Messages {
-		removeDuplication(child, f, targets, traversed)
+		liftMessage(child, f, targets, traversed)
 		if targets.contains(child.Name) {
 			if !traversed[child.Name] {
 				f.AddMessage(child)
@@ -61,10 +36,10 @@ func removeDuplication(msg *pbast.Message, f *pbast.File, targets stringSet, tra
 	msg.Messages = children
 }
 
-func extractIdenticalMessage(types map[string][]*pbast.Message) stringSet {
+func extractIdenticalMessages(types map[string][]*pbast.Message) stringSet {
 	set := newStringSet()
 	for name, msgs := range types {
-		if identicalMessage(msgs) {
+		if allMessagesIdentical(msgs) {
 			set.add(name)
 		}
 	}
@@ -72,7 +47,7 @@ func extractIdenticalMessage(types map[string][]*pbast.Message) stringSet {
 	return set
 }
 
-func identicalMessage(msgs []*pbast.Message) bool {
+func allMessagesIdentical(msgs []*pbast.Message) bool {
 	if len(msgs) == 1 {
 		return true
 	}
@@ -87,21 +62,21 @@ func identicalMessage(msgs []*pbast.Message) bool {
 	return true
 }
 
-func countName(f *pbast.File) map[string][]*pbast.Message {
+func aggregateMessages(f *pbast.File) map[string][]*pbast.Message {
 	msgs := map[string][]*pbast.Message{}
-	countMessage(f.Messages, msgs)
+	traverseMessages(f.Messages, msgs)
 	return msgs
 }
 
-func countMessage(msgs []*pbast.Message, count map[string][]*pbast.Message) {
+func traverseMessages(msgs []*pbast.Message, count map[string][]*pbast.Message) {
 	if len(msgs) == 0 {
 		return
 	}
 
 	head, tail := msgs[0], msgs[1:]
 	count[head.Name] = append(count[head.Name], head)
-	countMessage(head.Messages, count)
-	countMessage(tail, count)
+	traverseMessages(head.Messages, count)
+	traverseMessages(tail, count)
 }
 
 func CompleteZeroInEnum(f *pbast.File) *pbast.File {
