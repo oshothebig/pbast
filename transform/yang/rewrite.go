@@ -31,6 +31,62 @@ func liftMessage(msg *pbast.Message, f *pbast.File, count map[string][]*pbast.Me
 	msg.Messages = children
 }
 
+func RemoveDuplication(f *pbast.File) *pbast.File {
+	types := countName(f)
+	targets := extractIdenticalMessage(types)
+	traversed := map[string]bool{}
+	for _, m := range f.Messages {
+		removeDuplication(m, f, targets, traversed)
+	}
+	return f
+}
+
+func removeDuplication(msg *pbast.Message, f *pbast.File, targets stringSet, traversed map[string]bool) {
+	if len(msg.Messages) == 0 {
+		return
+	}
+
+	var children []*pbast.Message
+	for _, child := range msg.Messages {
+		removeDuplication(child, f, targets, traversed)
+		if targets.contains(child.Name) {
+			if !traversed[child.Name] {
+				f.AddMessage(child)
+				traversed[child.Name] = true
+			}
+		} else {
+			children = append(children, child)
+		}
+	}
+	msg.Messages = children
+}
+
+func extractIdenticalMessage(types map[string][]*pbast.Message) stringSet {
+	set := newStringSet()
+	for name, msgs := range types {
+		if identicalMessage(msgs) {
+			set.add(name)
+		}
+	}
+
+	return set
+}
+
+func identicalMessage(msgs []*pbast.Message) bool {
+	if len(msgs) == 1 {
+		return true
+	}
+
+	for i := 0; i < len(msgs); i++ {
+		for j := i + 1; j < len(msgs); j++ {
+			if !pbast.IsSameType(msgs[i], msgs[j]) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func countName(f *pbast.File) map[string][]*pbast.Message {
 	msgs := map[string][]*pbast.Message{}
 	countMessage(f.Messages, msgs)

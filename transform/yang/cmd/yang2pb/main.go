@@ -94,6 +94,7 @@ func (t *translator) rewrite(f *pbast.File) *pbast.File {
 		f = yang.CompleteZeroInEnum(f)
 		f = yang.AppendPrefixForEnumValueStartingWithNumber(f)
 		f = yang.LiftMessage(f)
+		f = yang.RemoveDuplication(f)
 	}
 
 	return f
