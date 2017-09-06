@@ -14,15 +14,15 @@ func LiftMessage(f *pbast.File) *pbast.File {
 	return f
 }
 
-func liftMessage(msg *pbast.Message, f *pbast.File, count map[string]int) {
+func liftMessage(msg *pbast.Message, f *pbast.File, count map[string][]*pbast.Message) {
 	if len(msg.Messages) == 0 {
 		return
 	}
 
 	var children []*pbast.Message
 	for _, child := range msg.Messages {
-		if count[child.Name] == 1 {
-			liftMessage(child, f, count)
+		liftMessage(child, f, count)
+		if len(count[child.Name]) == 1 {
 			f.AddMessage(child)
 		} else {
 			children = append(children, child)
@@ -31,19 +31,19 @@ func liftMessage(msg *pbast.Message, f *pbast.File, count map[string]int) {
 	msg.Messages = children
 }
 
-func countName(f *pbast.File) map[string]int {
-	count := map[string]int{}
-	countMessage(f.Messages, count)
-	return count
+func countName(f *pbast.File) map[string][]*pbast.Message {
+	msgs := map[string][]*pbast.Message{}
+	countMessage(f.Messages, msgs)
+	return msgs
 }
 
-func countMessage(msgs []*pbast.Message, count map[string]int) {
+func countMessage(msgs []*pbast.Message, count map[string][]*pbast.Message) {
 	if len(msgs) == 0 {
 		return
 	}
 
 	head, tail := msgs[0], msgs[1:]
-	count[head.Name]++
+	count[head.Name] = append(count[head.Name], head)
 	countMessage(head.Messages, count)
 	countMessage(tail, count)
 }
