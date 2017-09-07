@@ -113,8 +113,11 @@ func (t *transformer) moduleComment(e entry) pbast.Comment {
 
 	var comment []string
 	comment = append(comment, description...)
+	comment = append(comment, "")
 	comment = append(comment, namespace...)
+	comment = append(comment, "")
 	comment = append(comment, revisions...)
+	comment = append(comment, "")
 	comment = append(comment, reference...)
 
 	return comment
