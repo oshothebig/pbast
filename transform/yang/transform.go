@@ -106,21 +106,34 @@ func (t *transformer) module(e entry) *pbast.File {
 }
 
 func (t *transformer) moduleComment(e entry) pbast.Comment {
-	description := t.description(e)
-	namespace := t.namespace(e)
-	revisions := t.revisions(e)
-	reference := t.reference(e)
+	return joinComments("",
+		t.description(e),
+		attributeToComment(e, "yang-version", "YANG version"),
+		t.namespace(e),
+		attributeToComment(e, "organization", "Organization"),
+		attributeToComment(e, "contact", "Contact"),
+		t.revisions(e),
+		t.reference(e),
+	)
+}
 
-	var comment []string
-	comment = append(comment, description...)
-	comment = append(comment, "")
-	comment = append(comment, namespace...)
-	comment = append(comment, "")
-	comment = append(comment, revisions...)
-	comment = append(comment, "")
-	comment = append(comment, reference...)
+func joinComments(sep string, comments ...pbast.Comment) pbast.Comment {
+	if len(comments) == 0 {
+		return nil
+	}
 
-	return comment
+	var concat []string
+	concat = append(concat, comments[0]...)
+	for _, comment := range comments[1:] {
+		if len(comment) == 0 {
+			continue
+		}
+
+		concat = append(concat, sep)
+		concat = append(concat, comment...)
+	}
+
+	return concat
 }
 
 func (t *transformer) genericComments(e entry) pbast.Comment {
@@ -154,6 +167,23 @@ func (t *transformer) revisions(e entry) pbast.Comment {
 	}
 
 	return lines
+}
+
+func attributeToComment(e entry, stmt, comment string) pbast.Comment {
+	v := e.Extra[stmt]
+	if len(v) == 0 {
+		return nil
+	}
+
+	attribute := v[0].(*yang.Value)
+	if attribute == nil {
+		return nil
+	}
+	if attribute.Name == "" {
+		return nil
+	}
+
+	return []string{comment + ": " + attribute.Name}
 }
 
 func (t *transformer) namespace(e entry) pbast.Comment {
