@@ -137,11 +137,10 @@ func joinComments(sep string, comments ...pbast.Comment) pbast.Comment {
 }
 
 func (t *transformer) genericComments(e entry) pbast.Comment {
-	description := t.description(e)
-	reference := t.reference(e)
-
-	comments := append(description, reference...)
-	return comments
+	return joinComments("",
+		t.description(e),
+		t.reference(e),
+	)
 }
 
 func (t *transformer) description(e entry) pbast.Comment {
