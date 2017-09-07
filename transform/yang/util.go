@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+	"unicode"
 )
 
 func guessElements(s string) []string {
@@ -31,6 +32,11 @@ func guessElements(s string) []string {
 		return strings.Split(s, sep)
 	}
 
+	// CamelCase based
+	if segment, err := splitCamelCase(s); err == nil {
+		return segment
+	}
+
 	// give up guessing
 	return []string{s}
 }
@@ -51,6 +57,76 @@ func guessSeparator(s string, seps []string) (string, error) {
 	}
 
 	return found[0], nil
+}
+
+func splitCamelCase(s string) ([]string, error) {
+	indexes := upperCaseIndexes(s)
+
+	// no upper case character found
+	if len(indexes) == 0 {
+		return []string{s}, nil
+	}
+
+	indexes = complementFirstCharacter(indexes)
+	indexes = complementLastCharacter(indexes, s)
+	indexes = handleAbbreviation(indexes)
+	return splitByIndexes(s, indexes), nil
+}
+
+func upperCaseIndexes(s string) []int {
+	var indexes []int
+	for i, ch := range s {
+		if unicode.IsUpper(ch) {
+			indexes = append(indexes, i)
+		}
+	}
+
+	return indexes
+}
+
+func complementFirstCharacter(indexes []int) []int {
+	if indexes[0] != 0 {
+		return append([]int{0}, indexes...)
+	}
+
+	return indexes
+}
+
+func complementLastCharacter(indexes []int, s string) []int {
+	if indexes[len(indexes)-1] == len(s) {
+		return indexes
+	}
+
+	return append(indexes, len(s))
+}
+
+func handleAbbreviation(indexes []int) []int {
+	filtered := []int{0}
+	for pos := 1; pos < len(indexes)-1; pos++ {
+		if indexes[pos+1]-indexes[pos] == 1 {
+			continue
+		}
+
+		filtered = append(filtered, indexes[pos])
+	}
+	filtered = append(filtered, indexes[len(indexes)-1])
+
+	return filtered
+}
+
+func splitByIndexes(s string, indexes []int) []string {
+	if len(indexes) == 0 {
+		return []string{s}
+	}
+
+	var splitted []string
+	for pos := 1; pos < len(indexes); pos++ {
+		start := indexes[pos-1]
+		end := indexes[pos]
+		splitted = append(splitted, s[start:end])
+	}
+
+	return splitted
 }
 
 func CamelCase(s string) string {

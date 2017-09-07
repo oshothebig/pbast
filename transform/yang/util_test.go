@@ -16,6 +16,10 @@ func TestGuessElements(t *testing.T) {
 		{"http://www.example.com", []string{"com", "example", "www"}},
 		{"http://www.example.com/", []string{"com", "example", "www"}},
 		{"example.com", []string{"example", "com"}},
+		{"inService", []string{"in", "Service"}},
+		{"IPAddress", []string{"IP", "Address"}},
+		{"HTMLRender", []string{"HTML", "Render"}},
+		{"IpAddress", []string{"Ip", "Address"}},
 	}
 
 	for x, d := range table {
