@@ -3,7 +3,6 @@ package yang
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/oshothebig/pbast"
@@ -83,7 +82,7 @@ func (t *transformer) module(e entry) *pbast.File {
 	namespace := e.Namespace().Name
 	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
 
-	f.Comment = t.moduleComment(e)
+	f.Comment = e.moduleComment()
 
 	root := t.buildMessage("Root", e)
 	// Clear Root messgage comment because it overlaps with
@@ -103,117 +102,6 @@ func (t *transformer) module(e entry) *pbast.File {
 	t.reflectTo(f)
 
 	return f
-}
-
-func (t *transformer) moduleComment(e entry) pbast.Comment {
-	return joinComments("",
-		t.description(e),
-		attributeToComment(e, "yang-version", "YANG version"),
-		t.namespace(e),
-		attributeToComment(e, "organization", "Organization"),
-		attributeToComment(e, "contact", "Contact"),
-		t.revisions(e),
-		t.reference(e),
-	)
-}
-
-func joinComments(sep string, comments ...pbast.Comment) pbast.Comment {
-	if len(comments) == 0 {
-		return nil
-	}
-
-	var concat []string
-	concat = append(concat, comments[0]...)
-	for _, comment := range comments[1:] {
-		if len(comment) == 0 {
-			continue
-		}
-
-		concat = append(concat, sep)
-		concat = append(concat, comment...)
-	}
-
-	return concat
-}
-
-func (t *transformer) genericComments(e entry) pbast.Comment {
-	return joinComments("",
-		t.description(e),
-		t.reference(e),
-	)
-}
-
-func (t *transformer) description(e entry) pbast.Comment {
-	description := e.Description
-	if e.Description == "" {
-		return nil
-	}
-
-	lines := strings.Split(strings.TrimRight(description, "\n "), "\n")
-
-	ret := make([]string, 0, len(lines)+1)
-	ret = append(ret, "Description:")
-	ret = append(ret, lines...)
-	return ret
-}
-
-func (t *transformer) revisions(e entry) pbast.Comment {
-	var lines []string
-	if v := e.Extra["revision"]; len(v) > 0 {
-		for _, rev := range v[0].([]*yang.Revision) {
-			lines = append(lines, "Revision: "+rev.Name)
-		}
-	}
-
-	return lines
-}
-
-func attributeToComment(e entry, stmt, comment string) pbast.Comment {
-	v := e.Extra[stmt]
-	if len(v) == 0 {
-		return nil
-	}
-
-	attribute := v[0].(*yang.Value)
-	if attribute == nil {
-		return nil
-	}
-	if attribute.Name == "" {
-		return nil
-	}
-
-	return []string{comment + ": " + attribute.Name}
-}
-
-func (t *transformer) namespace(e entry) pbast.Comment {
-	namespace := e.Namespace().Name
-	if namespace == "" {
-		return nil
-	}
-
-	return []string{"Namespace: " + namespace}
-}
-
-func (t *transformer) reference(e entry) pbast.Comment {
-	v := e.Extra["reference"]
-	if len(v) == 0 {
-		return nil
-	}
-
-	ref := v[0].(*yang.Value)
-	if ref == nil {
-		return nil
-	}
-	if ref.Name == "" {
-		return nil
-	}
-
-	lines := strings.Split(strings.TrimRight(ref.Name, "\n "), "\n")
-
-	ret := make([]string, 0, len(lines)+1)
-	ret = append(ret, "Reference:")
-	ret = append(ret, lines...)
-	return ret
 }
 
 func (t *transformer) rpcs(e entry) *pbast.Service {
@@ -254,7 +142,7 @@ func (t *transformer) rpc(e entry) *pbast.RPC {
 		pbast.NewReturnType(in.TypeName()),
 		pbast.NewReturnType(out.TypeName()),
 	)
-	rpc.Comment = t.genericComments(e)
+	rpc.Comment = e.genericComments()
 
 	return rpc
 }
@@ -268,7 +156,7 @@ func (t *transformer) notifications(e entry) *pbast.Service {
 	s := pbast.NewService(CamelCase(e.Name + "Notification"))
 	for _, notification := range notifications {
 		n := t.notification(notification)
-		n.Comment = t.genericComments(notification)
+		n.Comment = notification.genericComments()
 		s.AddRPC(n)
 	}
 
@@ -293,7 +181,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 
 	msg := &pbast.Message{
 		Name:    name,
-		Comment: t.genericComments(e),
+		Comment: e.genericComments(),
 	}
 	scope := newScope()
 	for index, child := range e.children() {
@@ -315,7 +203,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 				Type:     typ.TypeName(),
 				Name:     underscoreCase(child.Name),
 				Index:    fieldNum,
-				Comment:  t.genericComments(child),
+				Comment:  child.genericComments(),
 			}
 		} else {
 			field = t.directory(scope, child, fieldNum, child.ListAttr != nil)
@@ -492,7 +380,7 @@ func (t *transformer) directory(scope *scope, e entry, index int, repeated bool)
 		Type:     inner.TypeName(),
 		Name:     fieldName,
 		Index:    index,
-		Comment:  t.genericComments(e),
+		Comment:  e.genericComments(),
 	}
 
 	if err := scope.addType(inner); err != nil {
