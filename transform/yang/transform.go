@@ -381,7 +381,6 @@ func (t *transformer) directory(scope *scope, e entry, index int, repeated bool)
 		Type:     inner.TypeName(),
 		Name:     fieldName,
 		Index:    index,
-		Comment:  e.genericComments(),
 	}
 
 	if err := scope.addType(inner); err != nil {
