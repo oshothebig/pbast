@@ -200,14 +200,14 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 			}
 
 			field = &pbast.MessageField{
-				Repeated: child.ListAttr != nil,
+				Repeated: child.IsLeafList(),
 				Type:     typ.TypeName(),
 				Name:     underscoreCase(child.Name),
 				Index:    fieldNum,
 				Comment:  child.genericComments(),
 			}
 		case child.IsContainer(), child.IsList(), child.IsChoice(), child.IsCase():
-			field = t.directory(scope, child, fieldNum, child.ListAttr != nil)
+			field = t.directory(scope, child, fieldNum, child.IsList())
 		}
 		msg.AddField(field)
 	}
