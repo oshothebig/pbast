@@ -60,73 +60,45 @@ func guessSeparator(s string, seps []string) (string, error) {
 }
 
 func splitCamelCase(s string) ([]string, error) {
-	indexes := upperCaseIndexes(s)
-
-	// no upper case character found
-	if len(indexes) == 0 {
+	if len(s) == 0 {
 		return []string{s}, nil
 	}
 
-	indexes = complementFirstCharacter(indexes)
-	indexes = complementLastCharacter(indexes, s)
-	indexes = handleAbbreviation(indexes)
-	return splitByIndexes(s, indexes), nil
-}
+	var ret []string
+	runes := []rune(s)
+	segment := []rune{runes[0]}
+	for i := 1; i < len(runes); i++ {
+		current := runes[i]
+		previous := runes[i-1]
 
-func upperCaseIndexes(s string) []int {
-	var indexes []int
-	for i, ch := range s {
-		if unicode.IsUpper(ch) {
-			indexes = append(indexes, i)
-		}
-	}
-
-	return indexes
-}
-
-func complementFirstCharacter(indexes []int) []int {
-	if indexes[0] != 0 {
-		return append([]int{0}, indexes...)
-	}
-
-	return indexes
-}
-
-func complementLastCharacter(indexes []int, s string) []int {
-	if indexes[len(indexes)-1] == len(s) {
-		return indexes
-	}
-
-	return append(indexes, len(s))
-}
-
-func handleAbbreviation(indexes []int) []int {
-	filtered := []int{0}
-	for pos := 1; pos < len(indexes)-1; pos++ {
-		if indexes[pos+1]-indexes[pos] == 1 {
+		if !unicode.IsUpper(current) {
+			segment = append(segment, current)
 			continue
 		}
 
-		filtered = append(filtered, indexes[pos])
+		if !unicode.IsUpper(previous) {
+			ret = append(ret, string(segment))
+			segment = []rune{current}
+			continue
+		}
+
+		if i+1 == len(runes) {
+			segment = append(segment, current)
+			continue
+		}
+
+		next := runes[i+1]
+		if unicode.IsUpper(next) {
+			segment = append(segment, current)
+			continue
+		}
+
+		ret = append(ret, string(segment))
+		segment = []rune{current}
 	}
-	filtered = append(filtered, indexes[len(indexes)-1])
+	ret = append(ret, string(segment))
 
-	return filtered
-}
-
-func splitByIndexes(s string, indexes []int) []string {
-	if len(indexes) == 0 {
-		return []string{s}
-	}
-
-	var splitted []string
-	for pos := 1; pos < len(indexes); pos++ {
-		start := indexes[pos-1]
-		end := indexes[pos]
-		splitted = append(splitted, s[start:end])
-	}
-
-	return splitted
+	return ret, nil
 }
 
 func CamelCase(s string) string {

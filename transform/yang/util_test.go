@@ -20,6 +20,13 @@ func TestGuessElements(t *testing.T) {
 		{"IPAddress", []string{"IP", "Address"}},
 		{"HTMLRender", []string{"HTML", "Render"}},
 		{"IpAddress", []string{"Ip", "Address"}},
+		{"ETHERNET", []string{"ETHERNET"}},
+		{"OCS", []string{"OCS"}},
+		{"aToZ", []string{"a", "To", "Z"}},
+		{"100G", []string{"100", "G"}},
+		{"Ipv4", []string{"Ipv4"}},
+		{"IPV4", []string{"IP", "V4"}},
+		{"IPv4", []string{"I", "Pv4"}},
 	}
 
 	for x, d := range table {
