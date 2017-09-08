@@ -187,7 +187,8 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 	for index, child := range e.children() {
 		fieldNum := index + 1
 		var field *pbast.MessageField
-		if child.Type != nil {
+		switch {
+		case child.IsLeaf(), child.IsLeafList():
 			typ := t.leaf(child.Type, messageName(child))
 
 			if needsInTopScope(typ) {
@@ -205,7 +206,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 				Index:    fieldNum,
 				Comment:  child.genericComments(),
 			}
-		} else {
+		case child.IsContainer(), child.IsList(), child.IsChoice(), child.IsCase():
 			field = t.directory(scope, child, fieldNum, child.ListAttr != nil)
 		}
 		msg.AddField(field)
