@@ -12,8 +12,8 @@ import (
 // This simplifies the structure of Protocol Buffer AST by reducing the depth
 // of nesting.
 func LiftMessage(f *pbast.File) *pbast.File {
-	types := aggregateMessages(f)
-	targets := extractIdenticalMessages(types)
+	types := groupMessagesByName(f)
+	targets := exactlySameMessages(types)
 	traversed := map[string]bool{}
 	for _, m := range f.Messages {
 		liftMessage(m, f, targets, traversed)
@@ -41,7 +41,7 @@ func liftMessage(msg *pbast.Message, f *pbast.File, targets stringSet, traversed
 	msg.Messages = children
 }
 
-func extractIdenticalMessages(types map[string][]*pbast.Message) stringSet {
+func exactlySameMessages(types map[string][]*pbast.Message) stringSet {
 	set := newStringSet()
 	for name, msgs := range types {
 		if allMessagesIdentical(msgs) {
@@ -67,7 +67,7 @@ func allMessagesIdentical(msgs []*pbast.Message) bool {
 	return true
 }
 
-func aggregateMessages(f *pbast.File) map[string][]*pbast.Message {
+func groupMessagesByName(f *pbast.File) map[string][]*pbast.Message {
 	msgs := map[string][]*pbast.Message{}
 	traverseMessages(f.Messages, msgs)
 	return msgs
@@ -84,6 +84,8 @@ func traverseMessages(msgs []*pbast.Message, count map[string][]*pbast.Message) 
 	traverseMessages(tail, count)
 }
 
+// CompleteZeroInEnum adds an enum value that corresponing to 0
+// when the found enum type doesn't have an enum value indicating 0.
 func CompleteZeroInEnum(f *pbast.File) *pbast.File {
 	if len(f.Messages) == 0 && len(f.Enums) == 0 {
 		return f
@@ -140,7 +142,9 @@ func completeZeroIfAbsent(e *pbast.Enum) *pbast.Enum {
 	return &newEnum
 }
 
-func AppendPrefixForEnumValueStartingWithNumber(f *pbast.File) *pbast.File {
+// AppendPrefixForEnumValueStartingWithDigit modifies the name of an enum value
+// if the enum value starts with a digit.
+func AppendPrefixForEnumValueStartingWithDigit(f *pbast.File) *pbast.File {
 	if len(f.Messages) == 0 && len(f.Enums) == 0 {
 		return f
 	}

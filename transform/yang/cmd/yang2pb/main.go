@@ -92,7 +92,7 @@ func (t *translator) execute() error {
 func (t *translator) rewrite(f *pbast.File) *pbast.File {
 	if t.config.rewrite {
 		f = yang.CompleteZeroInEnum(f)
-		f = yang.AppendPrefixForEnumValueStartingWithNumber(f)
+		f = yang.AppendPrefixForEnumValueStartingWithDigit(f)
 		f = yang.LiftMessage(f)
 	}
 
