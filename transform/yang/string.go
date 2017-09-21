@@ -7,6 +7,10 @@ import (
 	"unicode"
 )
 
+// CamelCase returns CamelCase of input s.
+// This method name starts with a capital letter
+// just because "camelCase", which describes our intention more correctly
+// in terms of visibility, may cause confusion.
 func CamelCase(s string) string {
 	elems := guessElements(s)
 	for x, e := range elems {
