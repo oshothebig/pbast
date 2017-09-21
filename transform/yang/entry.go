@@ -8,6 +8,8 @@ import (
 	"github.com/oshothebig/pbast"
 )
 
+// Tiny wrapper of goyang's Entry.
+// It's defined for convenience to access frequently referenced attributes.
 type entry struct {
 	*yang.Entry
 }

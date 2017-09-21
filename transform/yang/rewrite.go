@@ -6,6 +6,11 @@ import (
 	"github.com/oshothebig/pbast"
 )
 
+// LiftMessage pulls messages if the name of a message is defined only once,
+// if the name of a message is defined more than once but the definitions of
+// those messages are exactly same.
+// This simplifies the structure of Protocol Buffer AST by reducing the depth
+// of nesting.
 func LiftMessage(f *pbast.File) *pbast.File {
 	types := aggregateMessages(f)
 	targets := extractIdenticalMessages(types)

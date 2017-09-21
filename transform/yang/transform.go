@@ -47,7 +47,9 @@ type transformer struct {
 	topScope *scope
 }
 
-// e must be YANG module
+// Transform generates a Procotol Buffers AST from YANG AST.
+// The generated AST is an AST representing Protocol Buffer file.
+// The input, e, must be a YANG module.
 func Transform(e *yang.Entry) *pbast.File {
 	if _, ok := e.Node.(*yang.Module); !ok {
 		return nil
