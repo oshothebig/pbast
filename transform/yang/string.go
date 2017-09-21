@@ -7,6 +7,33 @@ import (
 	"unicode"
 )
 
+func CamelCase(s string) string {
+	elems := guessElements(s)
+	for x, e := range elems {
+		elems[x] = strings.Title(e)
+	}
+
+	return strings.Join(elems, "")
+}
+
+func snakeCase(s string) string {
+	elems := guessElements(s)
+	for x, e := range elems {
+		elems[x] = strings.ToLower(e)
+	}
+
+	return strings.Join(elems, "_")
+}
+
+func constantCase(s string) string {
+	elems := guessElements(s)
+	for x, e := range elems {
+		elems[x] = strings.ToUpper(e)
+	}
+
+	return strings.Join(elems, "_")
+}
+
 func guessElements(s string) []string {
 	// URL based
 	if strings.Contains(s, "://") {
@@ -99,33 +126,6 @@ func splitCamelCase(s string) ([]string, error) {
 	ret = append(ret, string(segment))
 
 	return ret, nil
-}
-
-func CamelCase(s string) string {
-	elems := guessElements(s)
-	for x, e := range elems {
-		elems[x] = strings.Title(e)
-	}
-
-	return strings.Join(elems, "")
-}
-
-func underscoreCase(s string) string {
-	elems := guessElements(s)
-	for x, e := range elems {
-		elems[x] = strings.ToLower(e)
-	}
-
-	return strings.Join(elems, "_")
-}
-
-func constantName(s string) string {
-	elems := guessElements(s)
-	for x, e := range elems {
-		elems[x] = strings.ToUpper(e)
-	}
-
-	return strings.Join(elems, "_")
 }
 
 func buildName(base, common, suffix string) string {

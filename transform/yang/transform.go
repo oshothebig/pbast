@@ -201,7 +201,7 @@ func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
 			field = &pbast.MessageField{
 				Repeated: child.IsLeafList(),
 				Type:     typ.TypeName(),
-				Name:     underscoreCase(child.Name),
+				Name:     snakeCase(child.Name),
 				Index:    fieldNum,
 				Comment:  child.genericComments(),
 			}
@@ -327,7 +327,7 @@ func (t *transformer) customEnum(name string, e *yang.EnumType) *pbast.Message {
 	enum := pbast.NewEnum("Value")
 	for _, v := range e.Values() {
 		n := e.ValueMap()[v]
-		enum.AddField(pbast.NewEnumField(constantName(n), int(v)))
+		enum.AddField(pbast.NewEnumField(constantCase(n), int(v)))
 	}
 	msg := pbast.NewMessage(name).
 		AddEnum(enum).
@@ -342,7 +342,7 @@ func (t *transformer) customUnion(name string, types []*yang.YangType) *pbast.Me
 
 	oneof := pbast.NewOneOf("value")
 	for i, typ := range pbTypes {
-		oneof.AddField(pbast.NewOneOfField(typ, underscoreCase(typ.TypeName()), i+1))
+		oneof.AddField(pbast.NewOneOfField(typ, snakeCase(typ.TypeName()), i+1))
 	}
 
 	msg := pbast.NewMessage(name).AddOneOf(oneof)
@@ -371,7 +371,7 @@ func (t *transformer) unionFields(types []*yang.YangType, pbTypes []pbast.Type, 
 }
 
 func (t *transformer) directory(scope *scope, e entry, index int, repeated bool) *pbast.MessageField {
-	fieldName := underscoreCase(e.Name)
+	fieldName := snakeCase(e.Name)
 	typeName := CamelCase(e.Name)
 
 	inner := t.buildMessage(typeName, e)
