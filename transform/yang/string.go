@@ -20,6 +20,7 @@ func CamelCase(s string) string {
 	return strings.Join(elems, "")
 }
 
+// snakeCase returns snake_case of input s.
 func snakeCase(s string) string {
 	elems := guessElements(s)
 	for x, e := range elems {
@@ -29,6 +30,7 @@ func snakeCase(s string) string {
 	return strings.Join(elems, "_")
 }
 
+// constantCase returns CONSTANT_CASE of input s.
 func constantCase(s string) string {
 	elems := guessElements(s)
 	for x, e := range elems {
