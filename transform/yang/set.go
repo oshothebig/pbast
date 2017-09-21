@@ -1,5 +1,6 @@
 package yang
 
+// Set for strings
 type stringSet map[string]struct{}
 
 func newStringSet() stringSet {
