@@ -40,6 +40,16 @@ func constantCase(s string) string {
 	return strings.Join(elems, "_")
 }
 
+// packageName returns dot separated string of input s.
+func packageName(s string) string {
+	elems := guessElements(s)
+	for x, s := range elems {
+		elems[x] = strings.ToLower(s)
+	}
+
+	return strings.Join(elems, ".")
+}
+
 func guessElements(s string) []string {
 	// URL based
 	if strings.Contains(s, "://") {

@@ -77,7 +77,7 @@ func (t *transformer) reflectTo(f *pbast.File) {
 
 func (t *transformer) module(e entry) *pbast.File {
 	namespace := e.Namespace().Name
-	f := pbast.NewFile(pbast.NewPackageWithElements(guessElements(namespace)))
+	f := pbast.NewFile(pbast.NewPackage(packageName(namespace)))
 
 	f.Comment = e.moduleComment()
 
