@@ -26,6 +26,7 @@ func TestGuessElements(t *testing.T) {
 		{"100G", []string{"100", "G"}},
 		{"Ipv4", []string{"Ipv4"}},
 		{"IPV4", []string{"IP", "V4"}},
+		// looks strange, but it's because we don't have a dictonary for abbreviations
 		{"IPv4", []string{"I", "Pv4"}},
 	}
 
