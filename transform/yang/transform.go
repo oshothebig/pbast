@@ -171,7 +171,9 @@ func (t *transformer) notification(e entry) *pbast.RPC {
 	out := t.buildMessage(buildName(method, common, "Response"), e)
 	t.declare(out)
 
-	return pbast.NewRPC(method, pbast.NewReturnType(in.TypeName()), pbast.NewReturnType(out.TypeName()))
+	returnType := pbast.NewReturnType(out.TypeName())
+	returnType.Streamable = true
+	return pbast.NewRPC(method, pbast.NewReturnType(in.TypeName()), returnType)
 }
 
 func (t *transformer) buildMessage(name string, e entry) *pbast.Message {
