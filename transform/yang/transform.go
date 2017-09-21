@@ -44,12 +44,7 @@ var builtinTypes = stringSet{
 }
 
 type transformer struct {
-	topScope           *scope
-	decimal64          *pbast.Message
-	leafRef            *pbast.Message
-	identityRef        *pbast.Message
-	instanceIdentifier *pbast.Message
-	emptyNeeded        bool
+	topScope *scope
 }
 
 // e must be YANG module
