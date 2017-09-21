@@ -63,3 +63,11 @@ func NewReturnType(name string) *ReturnType {
 		Name: name,
 	}
 }
+
+func (r *ReturnType) SetStreamable(s bool) *ReturnType {
+	if r == nil {
+		return r
+	}
+	r.Streamable = s
+	return r
+}
