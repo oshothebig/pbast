@@ -6,6 +6,8 @@ import (
 	"github.com/oshothebig/pbast"
 )
 
+// scope manages types defined in the same scope to avoid
+// a conflict between their names
 type scope struct {
 	types map[string]pbast.Type // mapping name and type
 	names []string              // preserving order
